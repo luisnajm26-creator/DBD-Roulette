@@ -43,10 +43,18 @@ function renderSurvivors(){
     selectedSurvivors.size+' <span data-i="selected">'+t('selected')+'</span>';
 }
 
+// img/killers/x.png -> img/thumbs/killers/x.webp (las miniaturas las genera tools/make_thumbs.py)
+function thumbOf(src){
+  return src.replace(/^img\/(killers|survivors)\/(.+?)\.\w+$/, 'img/thumbs/$1/$2.webp');
+}
+
+// Miniatura de cuadrícula: carga diferida; si la miniatura falta, cae a la imagen original.
 function imgTag(src, cls, alt){
-  if(src) return `<img class="${cls}" src="${src}" alt="${alt}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+  if(!src) return `<div class="kcard-img-placeholder">☠</div>`;
+  const thumb = thumbOf(src);
+  return `<img class="${cls}" src="${thumb}" alt="${alt}" width="256" height="256" loading="lazy" decoding="async"
+      onerror="if(this.src.indexOf('/thumbs/')>-1){this.onerror=null;this.src='${src}';}else{this.style.display='none';this.nextElementSibling.style.display='flex';}">
     <div class="kcard-img-placeholder" style="display:none">☠</div>`;
-  return `<div class="kcard-img-placeholder">☠</div>`;
 }
 
 function renderKillers(){
