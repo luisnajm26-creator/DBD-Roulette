@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBD Ruleta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0a0a0a;
+  --surf:     #141414;
+  --surf2:    #1c1c1c;
+  --red:      #8B1A1A;
+  --red2:     #C0392B;
+  --orange:   #C4622D;
+  --cream:    #E8DCC8;
+  --muted:    #9A8F7E;
+  --border:   #2a2a2a;
+  --green:    #2d6e2d;
+  --green2:   #5aad5a;
+  --purple:   #8B5CF6;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;}
+body{background:var(--bg);color:var(--cream);font-family:'Lato',sans-serif;}
+
+/* ── APP SHELL ── */
+.app{max-width:1500px;margin:0 auto;padding:16px;}
+
+/* ── HEADER ── */
+.header{text-align:center;margin-bottom:16px;border-bottom:1px solid var(--red);padding-bottom:12px;position:relative;}
+.header h1{font-family:'Oswald',sans-serif;font-size:24px;letter-spacing:5px;text-transform:uppercase;}
+.header p{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+.lang-bar{position:absolute;top:0;right:0;display:flex;gap:4px;}
+.lang-btn{background:var(--surf);border:1px solid var(--border);color:var(--muted);font-size:10px;font-family:'Oswald',sans-serif;letter-spacing:1px;padding:4px 8px;cursor:pointer;transition:all .2s;}
+.lang-btn.active{background:var(--red);border-color:var(--red2);color:var(--cream);}
+.lang-btn:hover:not(.active){border-color:var(--muted);color:var(--cream);}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:18px;}
+.tab{flex:1;padding:11px;font-family:'Oswald',sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:13px;background:var(--surf);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;}
+.tab.active{background:var(--red);border-color:var(--red2);color:var(--cream);}
+.tab:hover:not(.active){border-color:var(--muted);color:var(--cream);}
+.tab:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+
+/* ── PANELS ── */
+.panel{display:none;}.panel.active{display:block;}
+.section-title{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.info-row{font-size:10px;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;}
+
+/* ── SURVIVOR CHAR GRID ── */
+.char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;max-height:none;overflow-y:visible;padding-right:4px;margin-bottom:14px;}.char-grid::-webkit-scrollbar{width:4px;}
+.char-grid::-webkit-scrollbar-track{background:var(--surf);}
+.char-grid::-webkit-scrollbar-thumb{background:var(--red);}
+.char-btn{background:var(--surf);border:1px solid var(--border);color:var(--muted);padding:6px 8px;font-size:11px;font-family:'Lato',sans-serif;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.char-btn.selected{background:var(--surf2);border-color:var(--orange);color:var(--cream);}
+.char-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;}
+.char-btn.selected .dot{background:var(--orange);}
+
+/* ── KILLER CARD GRID ── */
+.killer-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;max-height:none;overflow-y:visible;padding-right:4px;margin-bottom:14px;}.killer-card-grid::-webkit-scrollbar{width:4px;}
+.killer-card-grid::-webkit-scrollbar-track{background:var(--surf);}
+.killer-card-grid::-webkit-scrollbar-thumb{background:var(--red);}
+.kcard{background:var(--surf);border:1px solid var(--border);cursor:pointer;transition:all .15s;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+.kcard.selected{border-color:var(--red2);}
+.kcard.blocked{border-color:transparent;background:#0f0f0f;cursor:default;opacity:.35;}
+.kcard.highlight{border-color:#fff;box-shadow:0 0 12px rgba(255,255,255,.25);}
+.kcard.winner{border-color:var(--red2);box-shadow:0 0 20px rgba(192,57,43,.6);}
+.kcard-img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top;background:var(--surf2);display:block;}
+/* Placeholder cuando no hay imagen */
+.kcard-img-placeholder{width:100%;aspect-ratio:3/4;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--border);}
+.kcard-label{padding:4px 2px;font-size:9.5px;font-family:'Oswald',sans-serif;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);text-align:center;background:var(--surf);border-top:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kcard.selected .kcard-label{color:var(--cream);}
+.kcard.blocked .kcard-label{text-decoration:line-through;color:#3a3a3a;}
+.kcard-win-overlay{position:absolute;inset:0;background:rgba(139,26,26,.15);pointer-events:none;}
+
+/* ── RESULT BOX ── */
+.result-box{background:var(--surf);border:1px solid var(--border);padding:16px;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px;position:relative;overflow:hidden;}
+.result-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent);}
+.empty-msg{font-size:12px;color:var(--muted);letter-spacing:1px;line-height:1.8;}
+
+/* ── PERK SLOTS ── */
+.perks-rolling{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;}
+.perk-slot{background:var(--surf2);border:1px solid var(--border);padding:14px;min-height:105px;display:flex;flex-direction:row;align-items:center;gap:14px;text-align:left;}
+.perk-slot.rolling{border-color:var(--orange);}
+.perk-slot.done{border-color:var(--red2);}
+.perk-icon-box{width:75px;height:75px;flex-shrink:0;background:var(--surf);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:6px;}
+.perk-icon-box img{width:100%;height:100%;object-fit:contain;padding:4px;}
+.perk-info{display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0;} /* Evita que el texto empuje la caja y se corte */
+.perk-slot .pname{font-size:17px;font-weight:700;color:var(--cream);margin-bottom:6px;line-height:1.2;white-space:normal;word-wrap:break-word;}
+.perk-slot .pchar{font-size:12px;color:var(--orange);letter-spacing:1px;text-transform:uppercase;white-space:normal;line-height:1.2;margin-top:2px;word-wrap:break-word;}
+.perk-slot .ptxt{font-size:15px;color:var(--muted);font-style:italic;}
+
+/* ── KILLER FULLSCREEN OVERLAY ── */
+.killer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;}
+.killer-overlay.show{display:flex;}
+.killer-overlay-img{max-height:55vh;max-width:340px;object-fit:contain;border:1px solid var(--red2);margin-bottom:20px;}
+.killer-overlay-placeholder{width:220px;height:300px;background:var(--surf);border:1px solid var(--red2);display:flex;align-items:center;justify-content:center;font-size:64px;margin-bottom:20px;}
+.killer-overlay-name{font-family:'Oswald',sans-serif;font-size:36px;letter-spacing:6px;text-transform:uppercase;color:var(--cream);}
+.killer-overlay-alias{font-size:13px;color:var(--orange);letter-spacing:3px;margin-top:6px;}
+.killer-overlay-hint{font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:24px;}
+.killer-mod-container { display:flex; gap:10px; margin-top:24px; flex-wrap:wrap; justify-content:center; max-width:900px; }
+.mod-box { background:var(--surf2); border:2px solid var(--border); padding:12px 16px; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); transition:all 0.1s; border-radius:4px; opacity:0.5; }
+.mod-box.rolling { border-color:var(--orange); color:var(--cream); transform:scale(1.05); opacity:1; }
+.mod-box.winner { border-color:var(--red2); color:var(--cream); background:var(--red); transform:scale(1.1); box-shadow:0 0 20px rgba(192,57,43,0.6); opacity:1; }
+
+/* ── BUTTONS ── */
+.spin-btn{width:100%;padding:13px;font-family:'Oswald',sans-serif;letter-spacing:3px;text-transform:uppercase;font-size:15px;background:var(--red);border:1px solid var(--red2);color:var(--cream);cursor:pointer;transition:all .2s;}
+.spin-btn:hover{background:var(--red2);}
+.spin-btn:disabled{background:var(--border);border-color:var(--border);color:var(--muted);cursor:not-allowed;}
+.actions-row{display:flex;gap:6px;margin-top:8px;}
+.small-btn{flex:1;padding:8px;font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:11px;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);background:var(--surf);color:var(--muted);transition:all .2s;}
+.small-btn:hover{color:var(--cream);border-color:var(--muted);}
+.small-btn.danger{border-color:var(--red);color:var(--red2);}
+.small-btn.danger:hover{background:var(--red);color:var(--cream);}
+.small-btn.success{border-color:var(--green);color:var(--green2);}
+.small-btn.success:hover{background:var(--green);color:var(--cream);}
+.small-btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+.badge{display:inline-block;font-size:9px;letter-spacing:1px;padding:2px 6px;margin-top:8px;}
+.badge.red{background:rgba(139,26,26,.3);color:var(--red2);border:1px solid var(--red);}
+.badge.orange{background:rgba(196,98,45,.2);color:var(--orange);border:1px solid var(--orange);}
+.badge.green{background:rgba(45,110,45,.3);color:var(--green2);border:1px solid var(--green);}
+
+/* ── TIMER BAR ── */
+.timer-bar-wrap{width:100%;background:var(--surf2);height:3px;margin-top:12px;border-radius:2px;overflow:hidden;}
+.timer-bar{height:100%;background:var(--red2);transition:width .1s linear;}
+
+/* ── KILLER SPIN DISPLAY (inside result box) ── */
+.killer-spin-wrap{display:flex;align-items:center;gap:20px;width:100%;}
+.killer-spin-img-box{width:100px;height:133px;flex-shrink:0;overflow:hidden;border:1px solid var(--border);}
+.killer-spin-img-box img{width:100%;height:100%;object-fit:cover;object-position:top;}
+.killer-spin-img-placeholder{width:100px;height:133px;flex-shrink:0;background:var(--surf2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--border);}
+.killer-spin-text{text-align:left;flex:1;}
+.killer-spin-name{font-family:'Oswald',sans-serif;font-size:26px;letter-spacing:3px;text-transform:uppercase;color:var(--orange);}
+.killer-spin-alias{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+/* ── RESPONSIVE DESIGN (MÓVILES) ── */
+@media (max-width: 500px) {
+  .char-grid {
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  }
+  .killer-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+  }
+  .char-btn {
+    font-size: 10px;
+    padding: 5px 6px;
+  }
+  .perks-rolling {
+    grid-template-columns: 1fr; /* Pone las perks en una sola columna en móviles */
+  }
+  .killer-overlay-img {
+    max-width: 85vw;
+  }
+  .killer-spin-img-box, .killer-spin-img-placeholder {
+    width: 80px;
+    height: 106px;
+  }
+  .killer-spin-name {
+    font-size: 20px;
+  }
+}
+/* ── DISEÑO A DOS COLUMNAS (PANTALLAS GRANDES - PC) ── */
+@media (min-width: 950px) {
+  .panel.active {
+    display: grid;
+    grid-template-columns: 1fr 580px; /* Izquierda: Personajes | Derecha: Ruleta y botones */    
+    grid-auto-rows: min-content;
+    column-gap: 24px;
+    align-items: start;
+  }
+  
+  /* Título y contador ocupan todo el ancho superior */
+  .section-title { grid-column: 1 / 3; grid-row: 1; }
+  .info-row      { grid-column: 1 / 3; grid-row: 2; margin-bottom: 16px; }
+  
+  /* Los personajes se van a la columna izquierda (1) */
+  .char-grid { 
+    grid-column: 1 / 2; 
+    grid-row: 3 / 10; 
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); /* Igualado con los killers */
+    margin-bottom: 0;
+  }
+  .killer-card-grid { 
+    grid-column: 1 / 2; 
+    grid-row: 3 / 10; 
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); /* Un poco más pequeños para que quepan todos */
+    margin-bottom: 0;
+  }
+  
+  /* La ruleta y botones se van a la columna derecha (2) */
+  .result-box { grid-column: 2 / 3; grid-row: 3; margin-bottom: 12px; }
+  .spin-btn   { grid-column: 2 / 3; grid-row: 4; margin-bottom: 12px; }
+  
+  /* Acomodo de los botones de abajo */
+  #killer-actions { grid-column: 2 / 3; grid-row: 5; margin-top: 0; margin-bottom: 8px; }
+  .panel.active .actions-row:last-child { grid-column: 2 / 3; grid-row: 6; margin-top: 0; }
+}
+/* ── STATS TABLE ── */
+.stats-modal-inner{background:var(--surf2);padding:24px;border:2px solid var(--border);border-radius:8px;max-width:720px;width:95%;margin:auto;margin-top:4vh;text-align:left;position:relative;box-shadow:0 10px 30px rgba(0,0,0,.8);display:flex;flex-direction:column;max-height:90vh;}
+.stats-search{width:100%;background:var(--surf);border:1px solid var(--border);color:var(--cream);padding:8px 12px;font-family:'Lato',sans-serif;font-size:13px;margin-bottom:12px;outline:none;}
+.stats-search:focus{border-color:var(--orange);}
+.stats-sort-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.stats-sort-btn{padding:5px 10px;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);background:var(--surf);color:var(--muted);transition:all .15s;}
+.stats-sort-btn.active{border-color:var(--orange);color:var(--orange);}
+.stats-table-wrap{overflow-y:auto;flex:1;margin-bottom:14px;}
+.stats-table{width:100%;border-collapse:collapse;font-size:13px;}
+.stats-table th{position:sticky;top:0;background:var(--surf);color:var(--muted);font-family:'Oswald',sans-serif;letter-spacing:1px;text-transform:uppercase;font-size:10px;padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;cursor:pointer;user-select:none;}
+.stats-table th:hover{color:var(--cream);}
+.stats-table th.sorted{color:var(--orange);}
+.stats-table td{padding:7px 10px;border-bottom:1px solid rgba(42,42,42,.5);color:var(--cream);vertical-align:middle;}
+.stats-table tr:hover td{background:rgba(255,255,255,.03);}
+.stats-table .count-cell{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;width:60px;}
+.stats-table .count-0{color:var(--border);}
+.stats-table .count-low{color:var(--muted);}
+.stats-table .count-mid{color:var(--cream);}
+.stats-table .count-high{color:var(--orange);}
+.stats-table .count-top{color:var(--red2);}
+.stats-perk-char{font-size:10px;color:var(--muted);display:block;margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
+.stats-bar{height:4px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden;}
+.stats-bar-fill{height:100%;border-radius:2px;transition:width .3s;}
+.stats-summary{font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;gap:16px;flex-wrap:wrap;}
+.stats-summary span{color:var(--cream);}
+
+/* ── FOOTER LEGAL ── */
+.footer-legal {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+  font-family: 'Lato', sans-serif;
+}
+.footer-legal span {
+  color: var(--orange);
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+
+<!-- KILLER FULLSCREEN OVERLAY -->
+<div class="killer-overlay" id="killer-overlay" onclick="closeOverlay()">
+  <div id="overlay-img-wrap"></div>
+  <div class="killer-overlay-name" id="overlay-name"></div>
+  <div class="killer-overlay-alias" id="overlay-alias"></div>
+  
+  <!-- RULETA DE MODALIDAD -->
+  <div class="killer-mod-container" id="overlay-mod-container">
+     <div class="mod-box" id="mod-box-0"></div>
+     <div class="mod-box" id="mod-box-1"></div>
+     <div class="mod-box" id="mod-box-2"></div>
+     <div class="mod-box" id="mod-box-3"></div>
+     <div class="mod-box" id="mod-box-4"></div>
+  </div>
+
+  <button class="small-btn" id="skip-overlay-btn" onclick="skipOverlay(event)" style="margin-top:24px;border-color:var(--orange);color:var(--orange);display:none;width:150px;flex:none;">&#9654; <span data-i="skip">SALTAR</span></button>
+  
+  <div class="killer-overlay-hint" id="overlay-hint">CLICK PARA CERRAR</div>
+</div>
+
+<div class="app">
+  <div class="header">
+    <div class="header-right" style="display:flex; align-items:center; gap:15px;">
+        <button class="small-btn" onclick="showStats()" style="border-color:var(--orange);color:var(--orange);margin:0;padding:0 12px; height:32px; flex:none;" data-i="stats_btn">📊 ESTADÍSTICAS</button>      <div>
+        <button class="lang-btn active" onclick="setLang('es')">ES</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+    <h1>&#9760; <span id="header-title">DBD RULETA</span></h1>
+    <p id="header-sub">Herramienta de entretenimiento &mdash; Dead by Daylight</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-surv" onclick="switchTab('survivor')" id="tab-surv">&#128697; <span data-i="tab_surv">SUPERVIVIENTES</span></button>
+    <button class="tab" id="tab-killer" onclick="switchTab('killer')">&#128299; <span data-i="tab_kill">KILLERS</span></button>
+  </div>
+
+  <!-- ══ SUPERVIVIENTES ══ -->
+ <div id="panel-survivor" class="panel active">
+    <div class="section-title" data-i="surv_title">Personajes con Prestigio 1 o 3 desbloqueados</div>
+    <div class="info-row">
+      <span data-i="surv_hint">Marca quiénes tienes prestidigiados</span>
+      <span id="surv-count">0 <span data-i="selected">seleccionados</span></span>
+    </div>
+    <div class="char-grid" id="surv-grid"></div>
+    <div class="result-box" id="surv-result">
+      <p class="empty-msg" data-i="surv_empty">Selecciona personajes y gira la ruleta</p>
+    </div>
+    <button class="spin-btn" id="spin-surv-btn" onclick="spinSurvivor()">&#127922; <span data-i="spin_perks">GIRAR PERKS</span></button>
+    <button class="small-btn" id="skip-surv-btn" onclick="skipSurvivor()" style="margin-top:6px;border-color:var(--orange);color:var(--orange);display:none">&#9654; <span data-i="skip">SALTAR</span></button>
+    <div class="actions-row">
+      <button class="small-btn" onclick="selectAllSurv()" data-i="select_all">Seleccionar todos</button>
+      <button class="small-btn" onclick="clearSurv()" data-i="clear_sel">Limpiar selección</button>
+      <button id="btn-toggle-gen" class="small-btn" onclick="toggleGeneralPerks()" style="border-color:var(--purple);color:var(--purple);">Perks Generales: ON</button>
+    </div>
+  </div>
+
+  <div id="panel-killer" class="panel">
+    <div class="section-title" data-i="kill_title">Asesinos disponibles</div>
+    <div class="info-row">
+      <span data-i="kill_hint">Tachados = ya jugados con victoria</span>
+      <span id="killer-count">0 <span data-i="available">disponibles</span></span>
+    </div>
+    <div class="killer-card-grid" id="killer-grid"></div>
+    <div class="result-box" id="killer-result">
+      <p class="empty-msg" data-i="kill_empty">Selecciona asesinos y gira la ruleta</p>
+    </div>
+    <button class="spin-btn" id="spin-killer-btn" onclick="spinKiller()">&#127922; <span data-i="spin_killer">GIRAR ASESINO</span></button>
+    <button class="small-btn" id="skip-killer-btn" onclick="skipKiller()" style="margin-top:6px;border-color:var(--orange);color:var(--orange);display:none">&#9654; <span data-i="skip">SALTAR</span></button>
+    <div class="actions-row" id="killer-actions" style="display:none;">
+      <button class="small-btn success" id="btn-win" onclick="markWin()">&#10003; <span data-i="won">GANÉ — BLOQUEAR</span></button>
+      <button class="small-btn" id="btn-loss" onclick="markLoss()">&#10005; <span data-i="lost">PERDÍ — DEJAR LIBRE</span></button>
+    </div>
+    <div class="actions-row">
+      <button class="small-btn" onclick="selectAllKillers()" data-i="select_all">Seleccionar todos</button>
+      <button class="small-btn" onclick="clearKillers()" data-i="clear_sel">Limpiar selección</button>
+      <button id="btn-toggle-mod" class="small-btn" onclick="toggleKillerMods()" style="border-color:var(--orange);color:var(--orange);">Evento Modalidad: ON</button>
+      <button class="small-btn danger" onclick="resetAceches()" data-i="reset_aceches">↺ REINICIAR ACECHES</button>
+    </div>
+  </div>
+<!-- ══ FOOTER / LEGAL ══ -->
+  <div class="footer-legal">
+    <p><span data-i="footer_dev">Desarrollado por</span> <span>Luis A.</span> <span data-i="footer_community">para la comunidad.</span></p>
+    <p data-i="footer_nonprofit">Esta página es una herramienta no oficial sin fines de lucro, creada puramente para el entretenimiento de los jugadores.</p>
+    <p><span data-i="footer_copyright">Dead by Daylight y todos los recursos, personajes e imágenes relacionados son marcas registradas de</span> <span>Behaviour Interactive Inc.</span> <span data-i="footer_rights">Todos los derechos reservados.</span></p>
+  </div>
+</div> <!-- Este es el cierre de div class="app" que ya tenías -->
+<!-- MODAL DE ESTADÍSTICAS -->
+  <div class="killer-overlay" id="stats-overlay" onclick="closeStats()">
+    <div class="stats-modal-inner" onclick="event.stopPropagation()">
+      <h2 data-i="stats_title" style="color:var(--orange);font-family:'Oswald',sans-serif;letter-spacing:2px;margin-bottom:14px;text-align:center;flex-shrink:0;">ESTADÍSTICAS DE RULETA</h2>
+
+      <!-- Resumen rápido modalidades killer -->
+      <div id="stats-kill-summary" style="margin-bottom:14px;flex-shrink:0;"></div>
+
+      <!-- Buscador + ordenación -->
+      <div style="flex-shrink:0;">
+        <input class="stats-search" id="stats-search" type="text" placeholder="🔍 Buscar perk..." oninput="renderStatsTable()">
+        <div class="stats-sort-row">
+          <span style="font-size:10px;color:var(--muted);align-self:center;font-family:Oswald,sans-serif;letter-spacing:1px;text-transform:uppercase;">Ordenar:</span>
+          <button class="stats-sort-btn active" id="sort-count" onclick="setSortStats('count')">Más usadas</button>
+          <button class="stats-sort-btn" id="sort-zero" onclick="setSortStats('zero')">Sin uso primero</button>
+          <button class="stats-sort-btn" id="sort-alpha" onclick="setSortStats('alpha')">A → Z</button>
+        </div>
+        <div class="stats-summary" id="stats-summary-row"></div>
+      </div>
+
+      <!-- Tabla de perks -->
+      <div class="stats-table-wrap">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th style="width:60px" onclick="setSortStats('count')">#</th>
+              <th onclick="setSortStats('alpha')">PERK</th>
+            </tr>
+          </thead>
+          <tbody id="stats-tbody"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-shrink:0;">
+        <button class="small-btn danger" onclick="resetStats()" style="flex:1;" data-i="btn_clear_stats">BORRAR DATOS</button>
+        <button class="small-btn" onclick="closeStats()" style="flex:1;" data-i="btn_close">CERRAR</button>
+      </div>
+    </div>
+  </div>
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════════════════════════════════════════════════════
+const I18N = {
+  es: {
+    title:"DBD RULETA",
+    tab_surv:"SUPERVIVIENTES", tab_kill:"ASESINOS",
+    surv_title:"Personajes con Prestigio 1 - 3 desbloqueados",
+    surv_hint:"Marca quiénes tienes prestidigiados",
+    selected:"seleccionados", surv_empty:"Selecciona personajes y gira la ruleta",
+    spin_perks:"GIRAR PERKS", select_all:"Seleccionar todos", clear_sel:"Limpiar selección",
+    kill_title:"Asesinos disponibles", kill_hint:"Tachados = ya jugados con victoria",
+    available:"disponibles", kill_empty:"Selecciona asesinos y gira la ruleta",
+    spin_killer:"GIRAR ASESINO", won:"GANÉ — BLOQUEAR", lost:"PERDÍ — DEJAR LIBRE",
+    reset_aceches:"↺ REINICIAR",
+    header_sub:"Dead by Daylight",
+    confirm_reset:"¿Reiniciar? Todos los asesinos bloqueados quedarán libres.",
+    blocked_until:"Bloqueado hasta reinicio", still_free:"Sigue disponible para la próxima",
+    week_reset:"Reiniciado — todos los asesinos disponibles",
+    victory:"Victoria registrada", defeat:"Derrota — asesino libre",
+    your_killer:"Tu asesino esta partida", perks_ready:"Perks listas",
+    overlay_hint:"Haz click para cerrar", spinning:"Buscando asesino...",
+    general_perks:"General", skip:"SALTAR",
+    // MODALIDADES
+    empty_slot:"Ranura Vacía",
+    mod_4p:"4 Perks + Add-ons",
+    mod_3p:"3 Perks + Add-ons",
+    mod_2p:"2 Perks + Add-ons",
+    mod_1p:"1 Perk + Add-ons",
+    mod_0p:"0 Perks y 0 Addons (Extremo)",
+    // FOOTER LEGAL
+    footer_dev: "Desarrollado por",
+    footer_community: "para la comunidad.",
+    footer_nonprofit: "Esta página es una herramienta no oficial sin fines de lucro, creada puramente para el entretenimiento de los jugadores.",
+    footer_copyright: "Dead by Daylight y todos los recursos, personajes e imágenes relacionados son marcas registradas de",
+    footer_rights: "Todos los derechos reservados.",
+    // NUEVOS TEXTOS
+    gen_on: "Perks Generales: ON", gen_off: "Perks Generales: OFF",
+    mod_on: "Evento Modalidad: ON", mod_off: "Evento Modalidad: OFF",
+    stats_btn: "📊 ESTADÍSTICAS",
+    stats_title: "ESTADÍSTICAS DE RULETA",
+    stats_kill: "Frecuencia Modalidades (Asesino)",
+    stats_surv: "Top 15 Perks más frecuentes (Surv)",
+    stats_empty: "Aún no hay registros.",
+    times: "veces",
+    btn_clear_stats: "BORRAR DATOS",
+    btn_close: "CERRAR",
+    confirm_clear: "¿Estás seguro de que deseas reiniciar todos los contadores a cero?"
+  },
+  en: {
+    title:"DBD ROULETTE",
+    tab_surv:"SURVIVORS", tab_kill:"KILLERS",
+    surv_title:"Characters with Prestige 1 - 3 unlocked",
+    surv_hint:"Select your prestiged characters",
+    selected:"selected", surv_empty:"Select characters and spin the wheel",
+    spin_perks:"SPIN PERKS", select_all:"Select all", clear_sel:"Clear selection",
+    kill_title:"Available killers", kill_hint:"Strikethrough = already played (win)",
+    available:"available", kill_empty:"Select killers and spin the wheel",
+    spin_killer:"SPIN KILLER", won:"WON — BLOCK", lost:"LOST — KEEP FREE",
+    reset_aceches:"↺ RESET",
+    header_sub:"Dead by Daylight",
+    confirm_reset:"Reset? All blocked killers will be freed.",
+    blocked_until:"Blocked until reset", still_free:"Still available next time",
+    week_reset:"Reset — all killers available",
+    victory:"Victory recorded", defeat:"Defeat — killer stays free",
+    your_killer:"Your killer this match", perks_ready:"Perks ready",
+    overlay_hint:"Click to close", spinning:"Searching for killer...",
+    general_perks:"General", skip:"SKIP",
+    // MODALIDADES
+    empty_slot:"Empty Slot",
+    mod_4p:"4 Perks + Add-ons",
+    mod_3p:"3 Perks + Add-ons",
+    mod_2p:"2 Perks + Add-ons",
+    mod_1p:"1 Perk + Add-ons",
+    mod_0p:"0 Perks & 0 Addons (Hardcore)",
+    // FOOTER LEGAL
+    footer_dev: "Developed by",
+    footer_community: "for the community.",
+    footer_nonprofit: "This page is an unofficial, non-profit tool created purely for player entertainment.",
+    footer_copyright: "Dead by Daylight and all related assets, characters, and images are registered trademarks of",
+    footer_rights: "All rights reserved.",
+  // NUEVOS TEXTOS
+    gen_on: "General Perks: ON", gen_off: "General Perks: OFF",
+    mod_on: "Mod Event: ON", mod_off: "Mod Event: OFF",
+    stats_btn: "📊 STATS",
+    stats_title: "ROULETTE STATS",
+    stats_kill: "Mod Frequency (Killer)",
+    stats_surv: "Top 15 Most Frequent Perks (Surv)",
+    stats_empty: "No spin records yet.",
+    times: "times",
+    btn_clear_stats: "CLEAR DATA",
+    btn_close: "CLOSE",
+    confirm_clear: "Are you sure you want to reset all counters to zero?"
+  }
+};
+let lang = 'es';
+function t(key){ return (I18N[lang]||I18N.es)[key] || key; }
+
+function setLang(l){
+  if(!I18N[l]) return; 
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim()===l.toUpperCase()));
+  
+  const titleEl = document.getElementById('header-title');
+  if(titleEl) titleEl.textContent = t('title');
+  document.getElementById('header-sub').textContent = t('header_sub');
+  
+  document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
+  
+  renderSurvivors();
+  renderKillers();
+  
+  if (typeof _survFinalPerks !== 'undefined' && _survFinalPerks.length === 4) {
+     _survFinalPerks.forEach((p, i) => {
+        const nameEl = document.querySelector(`.pname[data-perk-idx="${i}"]`);
+        if(nameEl && p.perk) nameEl.textContent = p.perk[lang];
+        const charEl = document.querySelector(`.pchar[data-char-idx="${i}"]`);
+        if(charEl && p.char) charEl.textContent = p.char[lang];
+     });
+  }
+  
+  if (typeof _killFinalIdx !== 'undefined' && _killFinalIdx !== null) {
+     const k = KILLERS[_killFinalIdx];
+     const kn = document.querySelector('.killer-spin-name');
+     if(kn) kn.textContent = kName(k);
+     const ka = document.querySelector('.killer-spin-alias');
+     if(ka) ka.textContent = kAlias(k);
+     
+     const overlayName = document.getElementById('overlay-name');
+     if (overlayName) {
+        overlayName.textContent = kName(k);
+        document.getElementById('overlay-alias').textContent = kAlias(k);
+     }
+  }
+  
+  const wlName = document.getElementById('win-loss-kname');
+  if (wlName && typeof _lastWinLossKiller !== 'undefined' && _lastWinLossKiller !== null) {
+     wlName.textContent = kName(KILLERS[_lastWinLossKiller]);
+  }
+
+  const modBadge = document.getElementById('killer-mod-badge');
+  if (modBadge && typeof _killFinalMod !== 'undefined' && _killFinalMod) {
+     modBadge.textContent = t(_killFinalMod);
+  }
+
+  // ── ESTO ES LO QUE FALTABA (Traduce los botones ON/OFF) ──
+  if(typeof updateToggleButtons === 'function') {
+     updateToggleButtons();
+  }
+
+  try{ localStorage.setItem('dbd_lang', l); }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════════════════
+const GENERAL_PERKS = [
+  { en:"Dark Sense",           es:"Percepción Oscura" },
+  { en:"Deja Vu",              es:"Déjà Vu" },
+  { en:"Hope",                 es:"Esperanza" },
+  { en:"Kindred",              es:"Familia" },
+  { en:"Lightweight",          es:"Ligereza" },
+  { en:"No One Left Behind",   es:"Nadie se queda atrás" },
+  { en:"Plunderers Instinct",  es:"Instinto de saqueador" },
+  { en:"Premonition",          es:"Premonición" },
+  { en:"Resilience",           es:"Resiliencia" },
+  { en:"Slippery Meat",        es:"Carne resbaladiza" },
+  { en:"Small Game",           es:"Caza menor" },
+  { en:"Spine Chill",          es:"Escalofríos" },
+  { en:"This Is Not Happening",es:"Esto no está pasando" },
+  { en:"Well Make It",         es:"Lo Conseguiremos" }
+];
+
+const SURVIVORS = [
+  { name:{es:"Dwight Fairfield",   en:"Dwight Fairfield",   ru:"Двайт Фэйрфилд"},
+    perks:{es:["Demuestra lo que vales","Líder","Vínculo"],          en:["Prove Thyself","Leader","Bond"],                  ru:["Прояви себя","Лидер","Связь"]} },
+  { name:{es:"Meg Thomas",         en:"Meg Thomas",         ru:"Мег Томас"},
+    perks:{es:["Adrenalina","Esprint","Velocidad Silenciosa"],       en:["Adrenaline","Sprint Burst","Quick & Quiet"],      ru:["Адреналин","Рывок","Тихий ход"]} },
+  { name:{es:"Claudette Morel",    en:"Claudette Morel",    ru:"Клодетт Морель"},
+    perks:{es:["Conocimientos de Botánica","Empatía","Autocuración"],en:["Botany Knowledge","Empathy","Self-Care"],         ru:["Знание ботаники","Эмпатия","Самолечение"]} },
+  { name:{es:"Jake Park",          en:"Jake Park",          ru:"Джейк Парк"},
+    perks:{es:["Voluntad de Hierro","Espíritu Calmado","Sabotear"],  en:["Iron Will","Calm Spirit","Saboteur"],             ru:["Железная воля","Спокойный дух","Саботажник"]} },
+  { name:{es:"Nea Karlsson",       en:"Nea Karlsson",       ru:"Неа Карлссон"},
+    perks:{es:["Evasión Urbana","Caída Equilibrada","De la Calle"],  en:["Urban Evasion","Balanced Landing","Streetwise"],  ru:["Городская уклонка","Мягкое приземление","Смекалка"]} },
+  { name:{es:"Laurie Strode",      en:"Laurie Strode",      ru:"Лори Строуд"},
+    perks:{es:["Golpe Decisivo","Solo Quedo Yo","Objeto de Obsesión"],en:["Decisive Strike","Sole Survivor","Object of Obsession"],ru:["Решительный удар","Единственный выживший","Объект одержимости"]} },
+  { name:{es:"Ace Visconti",       en:"Ace Visconti",       ru:"Эйс Висконти"},
+    perks:{es:["A Mano Descubierta","Subir las Apuestas","As en la Manga"],en:["Open-Handed","Up the Ante","Ace in the Hole"],ru:["Открытая рука","Ставки растут","Туз в рукаве"]} },
+  { name:{es:"Bill Overbeck",      en:"Bill Overbeck",      ru:"Билл Овербек"},
+    perks:{es:["Tiempo Prestado","Abandonado a tu Suerte","Inquebrantable"],en:["Borrowed Time","Left Behind","Unbreakable"],ru:["Одолженное время","Оставленный позади","Несломимый"]} },
+  { name:{es:"Feng Min",           en:"Feng Min",           ru:"Фэн Минь"},
+    perks:{es:["Pericia Técnica","Alerta","Agilidad"],               en:["Technician","Alert","Lithe"],                     ru:["Техник","Бдительность","Гибкость"]} },
+  { name:{es:"David King",         en:"David King",         ru:"Дэвид Кинг"},
+    perks:{es:["Vamos a Vivir para Siempre","Fajador","Me Da Igual"],en:["We're Gonna Live Forever","Dead Hard","No Mither"],ru:["Мы будем жить вечно","Мёртвый рывок","Без жалоб"]} },
+  { name:{es:"Quentin Smith",      en:"Quentin Smith",      ru:"Квентин Смит"},
+    perks:{es:["¡Despierta!","Farmacia","Vigilia"],                  en:["Wake Up!","Pharmacy","Vigil"],                    ru:["Проснись!","Аптека","Бдение"]} },
+  { name:{es:"Detective Tapp",     en:"Detective Tapp",     ru:"Детектив Тэпп"},
+    perks:{es:["Tenacidad","Corazonada","Bajo Vigilancia"],          en:["Tenacity","Detective's Hunch","Stake Out"],       ru:["Упорство","Наблюдение","Детективная интуиция"]} },
+  { name:{es:"Kate Denson",        en:"Kate Denson",        ru:"Кейт Дэнсон"},
+    perks:{es:["Arrebato","Baila Conmigo","Oportunidades"],          en:["Boil Over","Dance With Me","Windows of Opportunity"],ru:["Кровь кипит","Танцуй со мной","Окна возможностей"]} },
+  { name:{es:"Adam Francis",       en:"Adam Francis",       ru:"Адам Фрэнсис"},
+    perks:{es:["Distracción","Autodidacta","Liberación"],            en:["Diversion","Autodidact","Deliverance"],           ru:["Отвлечение","Самоучка","Освобождение"]} },
+  { name:{es:"Jeff Johansen",      en:"Jeff Johansen",      ru:"Джефф Йохансен"},
+    perks:{es:["Ruptura","Postratamiento","Distorsión"],             en:["Breakdown","Aftercare","Distortion"],             ru:["Слом","Уход","Искажение"]} },
+  { name:{es:"Jane Romero",        en:"Jane Romero",        ru:"Джейн Ромеро"},
+    perks:{es:["Solidaridad","Serenidad","De Frente"],               en:["Solidarity","Poised","Head On"],                  ru:["Солидарность","Невозмутимость","В лицо"]} },
+  { name:{es:"Ash Williams",       en:"Ash Williams",       ru:"Эш Уильямс"},
+    perks:{es:["Sujétate","Nos Vemos","El Templo del Hombre"],       en:["Buckle Up","Flip-Flop","Mettle of Man"],          ru:["Пристегнись","Перекувырок","Сила духа"]} },
+  { name:{es:"Nancy Wheeler",      en:"Nancy Wheeler",      ru:"Нэнси Уилер"},
+    perks:{es:["Mejor Juntos","Fuerza Interior","Fijación"],         en:["Better Together","Inner Strength","Fixated"],     ru:["Вместе лучше","Внутренняя сила","Зацикленность"]} },
+  { name:{es:"Steve Harrington",   en:"Steve Harrington",   ru:"Стив Харрингтон"},
+    perks:{es:["Niñero","Segundo Aliento","Camaradería"],            en:["Babysitter","Second Wind","Camaraderie"],         ru:["Нянька","Второе дыхание","Товарищество"]} },
+  { name:{es:"Yui Kimura",         en:"Yui Kimura",         ru:"Юи Кимура"},
+    perks:{es:["Golpe de Suerte","Fuga","Por Cualquier Medio"],      en:["Lucky Break","Breakout","Any Means Necessary"],   ru:["Любыми средствами","Прорыв","Удачный перерыв"]} },
+  { name:{es:"Zarina Kassir",      en:"Zarina Kassir",      ru:"Зарина Кассир"},
+    perks:{es:["Por la Gente","Extraoficialmente","Arenque Rojo"],   en:["For the People","Off the Record","Red Herring"],  ru:["За народ","Не в записях","Ложный след"]} },
+  { name:{es:"Cheryl Mason",       en:"Cheryl Mason",       ru:"Шерил Мейсон"},
+    perks:{es:["Pacto de Sangre","Alianza Reprimida","Defensa del Alma"],en:["Blood Pact","Repressed Alliance","Soul Guard"],ru:["Кровный союз","Подавленный союз","Страж души"]} },
+  { name:{es:"Felix Richter",      en:"Felix Richter",      ru:"Феликс Рихтер"},
+    perks:{es:["Visionario","Medidas Desesperadas","Diseñado para Durar"],en:["Visionary","Desperate Measures","Built to Last"],ru:["Провидец","Отчаянные меры","Создан на века"]} },
+  { name:{es:"Elodie Rakoto",      en:"Elodie Rakoto",      ru:"Элоди Ракото"},
+    perks:{es:["Lucha de Poderes","Detallista","Engaño"],            en:["Power Struggle","Appraisal","Deception"],         ru:["Борьба за власть","Оценка","Обман"]} },
+  { name:{es:"Yun-Jin Lee",        en:"Yun-Jin Lee",        ru:"Юн-Джин Ли"},
+    perks:{es:["Vía Rápida","Éxito Arrollador","Autoconservación"],  en:["Fast Track","Smash Hit","Self-Preservation"],     ru:["Быстрый трек","Сокрушительный удар","Самосохранение"]} },
+  { name:{es:"Jill Valentine",     en:"Jill Valentine",     ru:"Джилл Валентайн"},
+    perks:{es:["Contramedida","Resurgimiento","Mina Cegadora"],      en:["Counterforce","Resurgence","Blast Mine"],         ru:["Контрудар","Возрождение","Фугасная мина"]} },
+  { name:{es:"Leon Kennedy",       en:"Leon Kennedy",       ru:"Леон Кеннеди"},
+    perks:{es:["Aguante el Dolor","Granada Aturdidora","Espíritu de Novato"],en:["Bite the Bullet","Flashbang","Rookie Spirit"],ru:["Закуси пулю","Световая граната","Дух новичка"]} },
+  { name:{es:"Mikaela Reid",       en:"Mikaela Reid",       ru:"Микаэла Рид"},
+    perks:{es:["Bendición: Círculo de Curación","Bendición: Paso Sombrío","Clarividencia"],en:["Boon: Circle of Healing","Boon: Shadow Step","Clairvoyance"],ru:["Благо: Круг исцеления","Благо: Шаг в тени","Ясновидение"]} },
+  { name:{es:"Jonah Vasquez",      en:"Jonah Vasquez",      ru:"Джона Васкес"},
+    perks:{es:["Superar","Bendición: Exponencial","Corrección"],     en:["Overcome","Boon: Exponential","Corrective Action"],ru:["Преодоление","Благо: Экспоненциальный","Корректирующее действие"]} },
+  { name:{es:"Yoichi Asakawa",     en:"Yoichi Asakawa",     ru:"Йоити Асакава"},
+    perks:{es:["Consejos de Papá","Conexión Empática","Bendición: Teoría Oscura"],en:["Parental Guidance","Empathic Connection","Boon: Dark Theory"],ru:["Родительский контроль","Эмпатическая связь","Благо: Тёмная теория"]} },
+  { name:{es:"Haddie Kaur",        en:"Haddie Kaur",        ru:"Хэдди Каур"},
+    perks:{es:["Enfoque Interno","Manifiesto Residual","Demasiado Entusiasta"],en:["Inner Focus","Residual Manifest","Overzealous"],ru:["Внутренний фокус","Остаточное проявление","Чрезмерное усердие"]} },
+  { name:{es:"Ada Wong",           en:"Ada Wong",           ru:"Ада Вонг"},
+    perks:{es:["Sistema de Espionaje","Curación Reactiva","Perfil Bajo"],en:["Wiretap","Reactive Healing","Low Profile"],       ru:["Прослушка","Реактивное исцеление","Низкий профиль"]} },
+  { name:{es:"Rebecca Chambers",   en:"Rebecca Chambers",   ru:"Ребекка Чемберс"},
+    perks:{es:["Mejor que Nuevo","Consuelo","Hiperconcentración"],   en:["Better Than New","Reassurance","Hyperfocus"],     ru:["Лучше нового","Уверенность","Гиперфокус"]} },
+  { name:{es:"Vittorio Toscano",   en:"Vittorio Toscano",   ru:"Витторио Тоскано"},
+    perks:{es:["Energía Potencial","Conocimiento de la Niebla","Táctica Rápida"],en:["Potential Energy","Fogwise","Quick Gambit"],  ru:["Потенциальная энергия","Чутьё в тумане","Быстрая ставка"]} },
+  { name:{es:"Thalita Lyra",       en:"Thalita Lyra",       ru:"Талита Лира"},
+    perks:{es:["Trabajo en Equipo: El Poder de Dos","Competencia Amistosa","Suéltate"],en:["Teamwork: Power of Two","Friendly Competition","Cut Loose"],ru:["Командная работа: Сила двоих","Дружеское соревнование","Срыв"]} },
+  { name:{es:"Renato Lyra",        en:"Renato Lyra",        ru:"Ренато Лира"},
+    perks:{es:["Impulso Sangriento","Personaje Secundario","Trabajo en Equipo: Sigilo Colectivo"],en:["Blood Rush","Background Player","Teamwork: Collective Stealth"],ru:["Игрок второго плана","Кровяной порыв","Командная работа: Общая скрытность"]} },
+  { name:{es:"Gabriel Soma",       en:"Gabriel Soma",       ru:"Габриэль Сома"},
+    perks:{es:["Nacido para Esto","Chatarero","Solucionador de Problemas"],en:["Made for This","Scavenger","Troubleshooter"],ru:["Создан для этого","Мародёр","Решатель проблем"]} },
+  { name:{es:"Nicolas Cage",       en:"Nicolas Cage",       ru:"Николас Кейдж"},
+    perks:{es:["Compañero de Escena","Giro Argumental","Dramaturgia"],en:["Scene Partner","Plot Twist","Dramaturgy"],        ru:["Партнёр по сцене","Сюжетный поворот","Драматургия"]} },
+  { name:{es:"Ellen Ripley",       en:"Ellen Ripley",       ru:"Эллен Рипли"},
+    perks:{es:["Trampa Química","Estrella de la Suerte","Ágil"],     en:["Chemical Trap","Lucky Star","Lightfooted"],   ru:["Химическая ловушка","Счастливая звезда","Легкий шаг"]} },
+  { name:{es:"Alan Wake",          en:"Alan Wake",          ru:"Алан Уэйк"},
+    perks:{es:["Fecha Límite","Bendición: Iluminación","Campeón de la Luz"],en:["Deadline","Boon: Illumination","Champion of Light"],ru:["Дедлайн","Благо: Освещение","Чемпион света"]} },
+  { name:{es:"Sable Ward",         en:"Sable Ward",         ru:"Сейбл Уорд"},
+    perks:{es:["Fortaleza en las Sombras","Invocación: Arañas Tejedoras","Malicia"],en:["Strength in Shadows","Invocation: Weaving Spiders","Wicked"],ru:["Сила в тенях","Заклинание: Плетение паука","Нечестивый"]} },
+  { name:{es:"Aestri Yazar",       en:"Aestri Yazar",       ru:"Аэстри Язар"},
+    perks:{es:["Inspiración Bárdica","Ilusión Reflejada","Mirada Fija"],en:["Bardic Inspiration","Mirrored Illusion","Still Sight"],ru:["Бардическое вдохновение","Зеркальная иллюзия","Статичное зрение"]} },
+  { name:{es:"Lara Croft",         en:"Lara Croft",         ru:"Лара Крофт"},
+    perks:{es:["Elegancia","Endurecida","Especialista"],             en:["Finesse","Hardened","Specialist"],                ru:["Ловкость","Закаленная","Специалист"]} },
+  { name:{es:"Trevor Belmont",     en:"Trevor Belmont",     ru:"Тревор Бельмонт"},
+    perks:{es:["Exultación","Ojos de Belmont","Momento de Gloria"],  en:["Exultation","Eyes of Belmont","Moment of Glory"], ru:["Ликование","Глаза Бельмонта","Момент славы"]} },
+  { name:{es:"Taurie Cain",        en:"Taurie Cain",        ru:"Таури Кейн"},
+    perks:{es:["Cargar a Cuestas","Invocación: Cuervos Traicioneros","Punto y Aparte"], en:["Shoulder the Burden","Invocation: Treacherous Crows","Clean Break"], ru:["Взять на себя бремя","Заклинание: Коварные вороны","Чистый разрыв"]} },
+  { name:{es:"Orela Rose",         en:"Orela Rose",         ru:"Орела Роуз"},
+    perks:{es:["El Deber de Cuidar","No Hagas Daño","Respuesta Rápida"], en:["Duty to Care","Do No Harm","Rapid Response"], ru:["Долг заботы","Не навреди","Быстрое реагирование"]} },
+  { name:{es:"Rick Grimes",        en:"Rick Grimes",        ru:"Рик Граймс"},
+    perks:{es:["Ingenio Apocalíptico","Trabajo en Equipo: Entereza","¡Ven Por Mí!"], en:["Apocalyptic Ingenuity","Teamwork: Toughen Up","Come and Get Me!"], ru:["Апокалиптическая изобретательность","Командная работа: Закалка","Приди за мной!"]} },
+  { name:{es:"Michonne Grimes",    en:"Michonne Grimes",    ru:"Мишонн Граймс"},
+    perks:{es:["Convicción","Trabajo en Equipo: Lanzamiento","Último Enfrentamiento"], en:["Conviction","Teamwork: Throw Down","Last Stand"], ru:["Убеждение","Командная работа: Бросок","Последний бой"]} },
+  { name:{es:"Vee Boonyasak",      en:"Vee Boonyasak",      ru:"Ви Буньясак"},
+    perks:{es:["Notas Fantasma","Vida Itinerante","¡Uno-Dos-Tres-Cuatro!"], en:["Ghost Notes","Road Life","One-Two-Three-Four!"], ru:["Призрачные ноты","Кочевая жизнь","Раз-Два-Три-Четыре!"]} },
+  { name:{es:"Dustin Henderson",   en:"Dustin Henderson",   ru:"Дастин Хендерсон"},
+    perks:{es:["Bada, Bada, Bum","Cambio de Planes","Trabajo en Equipo: Circuito Completo"], en:["Bada Bada Boom","Change of Plan","Teamwork: Full Circuit"], ru:["Бада-бада-бум","Смена планов","Командная работа: Полная цепь"]} },
+  { name:{es:"Once",               en:"Eleven",             ru:"Одиннадцать"},
+    perks:{es:["Percepción Extrasensorial","Trabajo en Equipo: Tono Gentil","Te Vemos"], en:["Extrasensory Perception","Teamwork: Soft-Spoken","We See You"], ru:["Экстрасенсорное восприятие","Командная работа: Мягкий тон","Мы видим тебя"]} },
+  { name:{es:"Kwon Tae-young",     en:"Kwon Tae-young",     ru:"Квон Тэ-ён"},
+    perks:{es:["Cinco Movimientos Adelante","Estado de Flujo","Un Lugar Para Nosotros"], en:["Five Moves Ahead","Flow State","A Place For Us"], ru:["Пять шагов вперед","Состояние потока","Место para нас"]} },
+  { name:{es:"Shane Wiigwaas",     en:"Shane Wiigwaas",     ru:"Шейн Виигваас"},
+    perks:{es:["Echar una Mano","Interrogatorio","Máxima Velocidad"],  en:["Lend a Hand","Interrogation","Top Speed"],        ru:["Дать руку","Допрос","Максимальная скорость"]} },
+  { name:{es:"Aurora Stardotter", en:"Aurora Stardotter", ru:"Аврора Стардоттер"},
+    img:"img/survivors/aurora.webp",
+    perks:{ es:["Cosechas lo que Siembras", "Grito de Salvación", "Bendición: Determinación"], en:["Fruits of your Labor", "Salvation's Cry", "Boon: Steadfast"], ru:["Плоды вашего труда", "Крик спасения", "Благо: Стойкость"]
+    }
+  }
+];
+
+const KILLERS = [
+  { name:{es:"El Trampero", en:"The Trapper"},
+    alias:{es:"Evan MacMillan", en:"Evan MacMillan"}, img:"img/killers/trapper.png" },
+  { name:{es:"El Espectro", en:"The Wraith"},
+    alias:{es:"Philip Ojomo", en:"Philip Ojomo"}, img:"img/killers/wraith.webp" },
+  { name:{es:"El Pueblerino", en:"The Hillbilly"},
+    alias:{es:"Max Thompson Jr.", en:"Max Thompson Jr."}, img:"img/killers/hillbilly.webp" },
+  { name:{es:"La Enfermera", en:"The Nurse"},
+    alias:{es:"Sally Smithson", en:"Sally Smithson"}, img:"img/killers/nurse.webp" },
+  { name:{es:"La Forma", en:"The Shape"},
+    alias:{es:"Michael Myers", en:"Michael Myers"}, img:"img/killers/shape.webp" },
+  { name:{es:"La Bruja", en:"The Hag"},
+    alias:{es:"Lisa Sherwood", en:"Lisa Sherwood"}, img:"img/killers/hag.webp" },
+  { name:{es:"El Doctor", en:"The Doctor"},
+    alias:{es:"Herman Carter", en:"Herman Carter"}, img:"img/killers/doctor.webp" },
+  { name:{es:"La Cazadora", en:"The Huntress"},
+    alias:{es:"Anna", en:"Anna"}, img:"img/killers/huntress.webp" },
+  { name:{es:"El Caníbal", en:"The Cannibal"},
+    alias:{es:"Bubba Sawyer", en:"Bubba Sawyer"}, img:"img/killers/leatherface.webp" },
+  { name:{es:"La Pesadilla", en:"The Nightmare"},
+    alias:{es:"Freddy Krueger", en:"Freddy Krueger"}, img:"img/killers/freddy.webp" },
+  { name:{es:"La Cerda", en:"The Pig"},
+    alias:{es:"Amanda Young", en:"Amanda Young"}, img:"img/killers/pig.webp" },
+  { name:{es:"El Payaso", en:"The Clown"},
+    alias:{es:"Jeffrey Hawk", en:"Kenneth Chase"}, img:"img/killers/clown.webp" },
+  { name:{es:"El Espíritu", en:"The Spirit"},
+    alias:{es:"Rin Yamaoka", en:"Rin Yamaoka"}, img:"img/killers/spirit.webp" },
+  { name:{es:"La Legión", en:"The Legion"},
+    alias:{es:"Frank, Julie, Susie, Joey", en:"Frank, Julie, Susie, Joey"}, img:"img/killers/legion.webp" },
+  { name:{es:"La Plaga", en:"The Plague"},
+    alias:{es:"Adiris", en:"Adiris"}, img:"img/killers/plague.webp" },
+  { name:{es:"Ghost Face", en:"The Ghost Face"},
+    alias:{es:"Danny Johnson", en:"Danny Johnson"}, img:"img/killers/ghostface.webp" },
+  { name:{es:"El Demogorgon", en:"The Demogorgon"},
+    alias:{es:"Demogorgon", en:"Demogorgon"}, img:"img/killers/demogorgon.webp" },
+  { name:{es:"El Oni", en:"The Oni"},
+    alias:{es:"Kazan Yamaoka", en:"Kazan Yamaoka"}, img:"img/killers/oni.webp" },
+  { name:{es:"El Arponero de la Muerte", en:"The Deathslinger"},
+    alias:{es:"Caleb Quinn", en:"Caleb Quinn"}, img:"img/killers/deathslinger.webp" },
+  { name:{es:"El Ejecutor", en:"The Executioner"},
+    alias:{es:"Pyramid Head", en:"Pyramid Head"}, img:"img/killers/pyramidhead.webp" },
+  { name:{es:"El Deterioro", en:"The Blight"},
+    alias:{es:"Talbot Grimes", en:"Talbot Grimes"}, img:"img/killers/blight.webp" },
+  { name:{es:"Los Gemelos", en:"The Twins"},
+    alias:{es:"Charlotte & Victor Deshayes", en:"Charlotte & Victor Deshayes"}, img:"img/killers/twins.webp" },
+  { name:{es:"El Embaucador", en:"The Trickster"},
+    alias:{es:"Hak Ji-woon", en:"Hak Ji-woon"}, img:"img/killers/trickster.webp" },
+  { name:{es:"La Némesis", en:"The Nemesis"},
+    alias:{es:"Némesis T-Type", en:"Nemesis T-Type"}, img:"img/killers/nemesis.webp" },
+  { name:{es:"El Cenobita", en:"The Cenobite"},
+    alias:{es:"Elliot Spencer", en:"Elliot Spencer"}, img:"img/killers/cenobite.webp" },
+  { name:{es:"La Artista", en:"The Artist"},
+    alias:{es:"Carmina Mora", en:"Carmina Mora"}, img:"img/killers/artist.webp" },
+  { name:{es:"La Onryō", en:"The Onryō"},
+    alias:{es:"Sadako Yamamura", en:"Sadako Yamamura"}, img:"img/killers/sadako.webp" },
+  { name:{es:"La Draga", en:"The Dredge"},
+    alias:{es:"Draga", en:"Dredge"}, img:"img/killers/dredge.webp" },
+  { name:{es:"La Mente Maestra", en:"The Mastermind"},
+    alias:{es:"Albert Wesker", en:"Albert Wesker"}, img:"img/killers/wesker.webp" },
+  { name:{es:"El Caballero", en:"The Knight"},
+    alias:{es:"Tarhos Kovács", en:"Tarhos Kovács"}, img:"img/killers/knight.webp" },
+  { name:{es:"La Comerciante de Calaveras", en:"The Skull Merchant"},
+    alias:{es:"Adriana Imai", en:"Adriana Imai"}, img:"img/killers/skullmerchant.webp" },
+  { name:{es:"La Singularidad", en:"The Singularity"},
+    alias:{es:"HUX-A7-13", en:"HUX-A7-13"}, img:"img/killers/singularity.webp" },
+  { name:{es:"El Xenomorfo", en:"The Xenomorph"},
+    alias:{es:"Xenomorfo", en:"Xenomorph"}, img:"img/killers/xenomorph.webp" },
+  { name:{es:"El Chico Bueno", en:"The Good Guy"},
+    alias:{es:"Charles Lee Ray", en:"Charles Lee Ray"}, img:"img/killers/chucky.webp" },
+  { name:{es:"Lo Desconocido", en:"The Unknown"},
+    alias:{es:"Desconocido", en:"Unknown"}, img:"img/killers/unknown.webp" },
+  { name:{es:"El Liche", en:"The Lich"},
+    alias:{es:"Vecna", en:"Vecna"}, img:"img/killers/lich.webp" },
+  { name:{es:"El Señor Oscuro", en:"The Dark Lord"},
+    alias:{es:"Drácula", en:"Dracula"}, img:"img/killers/dracula.webp" },
+  { name:{es:"La Señora de los Sabuesos", en:"The Houndmaster"},
+    alias:{es:"Portia Maye", en:"Portia Maye"}, img:"img/killers/houndmaster.webp" },
+  { name:{es:"El Ghoul", en:"The Ghoul"},
+    alias:{es:"Ken Kaneki", en:"Ken Kaneki"}, img:"img/killers/kaneki.webp" },
+  { name:{es:"El Animatrónico", en:"The Animatronic"},
+    alias:{es:"William Afton", en:"William Afton"}, img:"img/killers/afton.webp" },
+  { name:{es:"La Krasue", en:"The Krasue"},
+    alias:{es:"Burong Sukapat", en:"Burong Sukapat"}, img:"img/killers/sukapat.webp" },
+  { name:{es:"El Primero", en:"The First"},
+    alias:{es:"Henry Creel", en:"Henry Creel"}, img:"img/killers/creel.webp" },
+  { name:{es:"The Slasher", en:"The Slasher"},
+    alias:{es:"Jason Voorhees", en:"Jason Voorhees"}, img:"img/killers/jason.webp" },
+  { name:{es:"El Juicio", en:"The Judgment"},
+    alias:{es:"Juicio", en:"Judgment"}, img:"img/killers/judgement.webp" 
+  }
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let selectedSurvivors = new Set();
+let selectedKillers   = new Set();
+let blockedKillers    = new Set();
+let lastKillerResult  = null;
+let spinning          = false;
+let _survInterval     = null; 
+let _killInterval     = null;
+let _survFinalPerks   = [];
+let _killFinalIdx     = null;
+let _lastWinLossKiller = null; 
+let _killFinalMod     = null; 
+
+let blockedMods       = {}; 
+let statsSurvPerks    = {}; 
+let statsKillMods     = {0:0, 1:0, 2:0, 3:0, 4:0}; 
+
+let useGeneralPerks   = true;
+let useKillerMods     = true;
+
+let _killFinalModIdx  = null; 
+let _overlaySpinning  = false;
+let _overlayInt       = null;
+let lastSpinPerks     = new Set(); 
+const MODS_KEYS       = ['mod_4p', 'mod_3p', 'mod_2p', 'mod_1p', 'mod_0p'];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AUDIO
+// ══════════════════════════════════════════════════════════════════════════════
+let audioCtx = null;
+function getCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, type, duration, vol){
+  try{
+    const ctx = getCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type||'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol||0.18, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+duration);
+    o.start(); o.stop(ctx.currentTime+duration);
+  }catch(e){}
+}
+function soundPerkLock()  { playTone(880,'square',.12,.12); setTimeout(()=>playTone(1100,'square',.1,.1),80); }
+function soundFinalFanfare(){
+  [440,554,659,880].forEach((f,i)=>setTimeout(()=>playTone(f,'triangle',.3,.15),i*100));
+}
+function soundKillerReveal(){
+  playTone(220,'sawtooth',.4,.18);
+  setTimeout(()=>playTone(330,'sawtooth',.3,.15),200);
+  setTimeout(()=>playTone(440,'square',.5,.2),450);
+}
+function soundRollTick(){
+  try{
+    const ctx=getCtx();
+    const buf=ctx.createBuffer(1,Math.floor(ctx.sampleRate*0.03),ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.07;
+    const src=ctx.createBufferSource(); src.buffer=buf;
+    const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1400; f.Q.value=1.2;
+    src.connect(f); f.connect(ctx.destination);
+    src.start(); src.stop(ctx.currentTime+0.03);
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════════════════════════════════════
+function save(){
+  try{
+    localStorage.setItem('dbd_surv',    JSON.stringify([...selectedSurvivors]));
+    localStorage.setItem('dbd_killers', JSON.stringify([...selectedKillers]));
+    localStorage.setItem('dbd_blocked', JSON.stringify([...blockedKillers]));
+    localStorage.setItem('dbd_blocked_mods', JSON.stringify(blockedMods)); 
+    localStorage.setItem('dbd_stats_surv', JSON.stringify(statsSurvPerks)); 
+    localStorage.setItem('dbd_stats_kill', JSON.stringify(statsKillMods)); 
+    localStorage.setItem('dbd_use_gen', useGeneralPerks); 
+    localStorage.setItem('dbd_use_mod', useKillerMods);   
+    localStorage.setItem('dbd_lang', lang);
+  }catch(e){}
+}
+function load(){
+  try{
+    const s=localStorage.getItem('dbd_surv');
+    const k=localStorage.getItem('dbd_killers');
+    const b=localStorage.getItem('dbd_blocked');
+    const bm=localStorage.getItem('dbd_blocked_mods'); 
+    const stS=localStorage.getItem('dbd_stats_surv'); 
+    const stK=localStorage.getItem('dbd_stats_kill'); 
+    const l=localStorage.getItem('dbd_lang');
+    if(s) selectedSurvivors=new Set(JSON.parse(s));
+    if(k) selectedKillers=new Set(JSON.parse(k));
+    if(b) blockedKillers=new Set(JSON.parse(b));
+    if(bm) blockedMods=JSON.parse(bm); 
+    if(stS) statsSurvPerks=JSON.parse(stS); 
+    if(stK) statsKillMods=JSON.parse(stK);  
+    if(l) lang=l;
+    const ug=localStorage.getItem('dbd_use_gen'); if(ug!==null) useGeneralPerks=(ug==='true');
+    const um=localStorage.getItem('dbd_use_mod'); if(um!==null) useKillerMods=(um==='true');
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
+function kName(k){ return (k.name[lang]||k.name.en); }
+function kAlias(k){ return (k.alias[lang]||k.alias.en); }
+function sName(s){ return (s.name[lang]||s.name.en); }
+function sPerks(s){ return (s.perks[lang]||s.perks.en); }
+
+function switchTab(tab){
+  if(spinning) return;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+(tab==='survivor'?'surv':'killer')).classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function setSpinning(val){
+  spinning=val;
+  ['tab-surv','tab-killer','spin-surv-btn','spin-killer-btn'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.disabled=val;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════════════════
+function renderSurvivors(){
+  const grid=document.getElementById('surv-grid');
+  grid.innerHTML=SURVIVORS.map((s,i)=>{
+    const selected=selectedSurvivors.has(i);
+    let cls='kcard'; 
+    if(selected) cls+=' selected';
+    const cleanName = s.name.en.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const imgSrc = s.img || `img/survivors/${cleanName}.webp`;
+
+    return `<div class="${cls}" id="scard-${i}" onclick="toggleSurv(${i})">
+      ${imgTag(imgSrc, 'kcard-img', sName(s))}
+      <div class="kcard-label">${sName(s)}</div>
+    </div>`;
+  }).join('');
+  
+  document.getElementById('surv-count').innerHTML=
+    selectedSurvivors.size+' <span data-i="selected">'+t('selected')+'</span>';
+}
+
+function imgTag(src, cls, alt){
+  if(src) return `<img class="${cls}" src="${src}" alt="${alt}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+    <div class="kcard-img-placeholder" style="display:none">☠</div>`;
+  return `<div class="kcard-img-placeholder">☠</div>`;
+}
+
+function renderKillers(){
+  const grid=document.getElementById('killer-grid');
+  grid.innerHTML=KILLERS.map((k,i)=>{
+    const blocked=blockedKillers.has(i);
+    const selected=selectedKillers.has(i);
+    let cls='kcard';
+    if(blocked) cls+=' blocked';
+    else if(selected) cls+=' selected';
+    const click=blocked?'':` onclick="toggleKiller(${i})"`;
+    const overlay=blocked?'<div class="kcard-win-overlay"></div>':'';
+    
+    let modBadge = '';
+    if(blocked && blockedMods[i]) {
+      modBadge = `<div style="position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.9); color:var(--orange); font-size:9.5px; font-weight:bold; font-family:'Oswald',sans-serif; padding:3px 6px; border:1px solid var(--orange); border-radius:3px; z-index:10; letter-spacing:1px; box-shadow: 0 0 8px rgba(0,0,0,0.8);">${blockedMods[i]}</div>`;
+    }
+
+    return `<div class="${cls}" id="kcard-${i}"${click}>
+      ${imgTag(k.img,'kcard-img',kName(k))}
+      ${overlay}
+      ${modBadge}
+      <div class="kcard-label">${kName(k)}</div>
+    </div>`;
+  }).join('');
+  const active=[...selectedKillers].filter(i=>!blockedKillers.has(i)).length;
+  document.getElementById('killer-count').innerHTML=
+    active+' <span data-i="available">'+t('available')+'</span>';
+} 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TOGGLE
+// ══════════════════════════════════════════════════════════════════════════════
+function toggleSurv(i){
+  if(spinning) return;
+  selectedSurvivors.has(i) ? selectedSurvivors.delete(i) : selectedSurvivors.add(i);
+  save(); renderSurvivors();
+}
+function toggleKiller(i){
+  if(spinning) return;
+  selectedKillers.has(i) ? selectedKillers.delete(i) : selectedKillers.add(i);
+  save(); renderKillers();
+}
+function selectAllSurv(){ 
+  if(spinning) return; 
+  if(selectedSurvivors.size === SURVIVORS.length) {
+    selectedSurvivors.clear();
+  } else {
+    SURVIVORS.forEach((_,i) => selectedSurvivors.add(i)); 
+  }
+  save(); renderSurvivors(); 
+}
+function clearSurv(){ 
+  if(spinning) return; 
+  selectedSurvivors.clear(); 
+  save(); renderSurvivors(); 
+}
+function selectAllKillers(){ 
+  if(spinning) return; 
+  const activeSelected = [...selectedKillers].filter(i => !blockedKillers.has(i)).length;
+  const totalAvailable = KILLERS.length - blockedKillers.size;
+  
+  if(activeSelected === totalAvailable && totalAvailable > 0) {
+    selectedKillers.clear();
+  } else {
+    KILLERS.forEach((_,i) => { if(!blockedKillers.has(i)) selectedKillers.add(i); }); 
+  }
+  save(); renderKillers(); 
+}
+
+function clearKillers(){ 
+  if(spinning) return; 
+  selectedKillers.clear(); 
+  save(); renderKillers(); 
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SURVIVOR SPIN 
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ESCAPE_PERKS = new Set([
+  "Sprint Burst", "Lithe", "Balanced Landing", "Dead Hard", "Overcome", 
+  "Smash Hit", "Background Player", "Dramaturgy", "Adrenaline", "Hope", 
+  "Finesse", "Lucky Break", "Quick & Quiet", "Dance With Me", "Lightweight",
+  "Lightfooted", "Cut Loose", "Deception"
+]);
+
+function buildPerkPool(pool){
+  const all=[], seen=new Set();
+
+  function addPerk(perkEs, perkEn, charEs, charEn){
+    if(seen.has(perkEn)) return;
+    seen.add(perkEn);
+    const clean = perkEn.toLowerCase().replace(/[^a-z0-9]/g,'');
+    const baseWeight = ESCAPE_PERKS.has(perkEn) ? 2 : 1;
+    const timesSeen = statsSurvPerks[perkEs] || 0;
+    const allCounts = Object.values(statsSurvPerks);
+    const maxSeen = allCounts.length > 0 ? Math.max(...allCounts) : 0;
+    const rarityFactor = maxSeen > 0 ? (1 + 2 * (1 - timesSeen / maxSeen)) : 3.0;
+    const finalWeight = baseWeight * rarityFactor;
+    all.push({
+      perk: { es: perkEs, en: perkEn },
+      char: { es: charEs, en: charEn },
+      img: `img/perks/${clean}.webp`,
+      weight: finalWeight
+    });
+  }
+
+  pool.forEach(idx=>{
+    const s = SURVIVORS[idx];
+    s.perks.en.forEach((pEn, pi) => {
+      addPerk(s.perks.es[pi], pEn, s.name.es || s.name.en, s.name.en);
+    });
+  });
+
+  if(useGeneralPerks){
+    GENERAL_PERKS.forEach(gp => {
+      addPerk(gp.es, gp.en, I18N.es.general_perks, I18N.en.general_perks);
+    });
+  }
+
+  return all;
+}
+
+function finishSurvivorSpin(finalPerks, box){
+  [0,1,2,3].forEach(i=>{
+    const slot=document.getElementById('slot-'+i);
+    if(!slot) return;
+    slot.classList.remove('rolling'); slot.classList.add('done');
+    slot.innerHTML=`
+      <div class="perk-icon-box">
+        <img src="${finalPerks[i].img}" onerror="this.style.display='none';this.parentElement.innerHTML='✨'">
+      </div>
+      <div class="perk-info">
+        <div class="pname" data-perk-idx="${i}">${finalPerks[i].perk[lang]}</div>
+        <div class="pchar" data-char-idx="${i}">${finalPerks[i].char[lang]}</div>
+      </div>`;
+  });
+  const tw=document.getElementById('perk-timer');
+  if(tw) tw.closest('.timer-bar-wrap').remove();
+  box.insertAdjacentHTML('beforeend',`<span class="badge orange" data-i="perks_ready">${t('perks_ready')}</span>`);
+  soundFinalFanfare();
+  const sb=document.getElementById('skip-surv-btn'); if(sb) sb.style.display='none';
+  setSpinning(false);
+}
+
+function skipSurvivor(){
+  if(!spinning || !_survInterval) return;
+  clearInterval(_survInterval); _survInterval=null;
+  finishSurvivorSpin(_survFinalPerks, document.getElementById('surv-result'));
+}
+
+function spinSurvivor(){
+  if(spinning) return;
+  const pool=[...selectedSurvivors];
+  const allPerks=buildPerkPool(pool);
+  if(!allPerks.length){
+    document.getElementById('surv-result').innerHTML=`<p class="empty-msg">${t('surv_empty')}</p>`;
+    return;
+  }
+
+  let numPerks = 4;
+  const rnd = Math.random() * 100;
+  if(rnd <= 5) {
+    numPerks = 2; 
+  } else if(rnd <= 20) {
+    numPerks = 3; 
+  }
+
+  let availablePool = allPerks;
+  if(lastSpinPerks.size > 0){
+    const filtered = allPerks.filter(p => !lastSpinPerks.has(p.perk.en));
+    if(filtered.length >= numPerks) {
+      availablePool = filtered; 
+    }
+  }
+
+  function weightedPick(pool){
+    let totalWeight = pool.reduce((sum, p) => sum + p.weight, 0);
+    let r = Math.random() * totalWeight;
+    let running = 0;
+    for(let j = 0; j < pool.length; j++){
+      running += pool[j].weight;
+      if(r <= running) return j;
+    }
+    return pool.length - 1; 
+  }
+
+  const finalPerks = [];
+  let tempPool = [...availablePool];
+
+  for(let i = 0; i < numPerks; i++){
+    if(tempPool.length === 0) break;
+    const idx = weightedPick(tempPool);
+    finalPerks.push(tempPool[idx]);
+    tempPool.splice(idx, 1); 
+  }
+
+  while(finalPerks.length < 4){
+    finalPerks.push({
+      perk: {es: I18N.es.empty_slot, en: I18N.en.empty_slot},
+      char: {es: "—", en: "—"},
+      img: "",
+      weight: 0
+    });
+  }
+
+  _survFinalPerks = finalPerks.sort(() => Math.random() - 0.5);
+  lastSpinPerks = new Set(finalPerks.map(p => p.perk.en).filter(en => en !== I18N.en.empty_slot));
+
+  finalPerks.forEach(p => {
+    if(p.perk.en !== I18N.en.empty_slot){
+      statsSurvPerks[p.perk.es] = (statsSurvPerks[p.perk.es] || 0) + 1;
+    }
+  });
+  save();
+
+  setSpinning(true);
+  const sb=document.getElementById('skip-surv-btn'); if(sb) sb.style.display='block';
+
+  const box=document.getElementById('surv-result');
+  box.innerHTML=`
+    <div class="perks-rolling" id="perks-rolling">
+      ${[0,1,2,3].map(i=>`
+        <div class="perk-slot rolling" id="slot-${i}">
+          <div class="perk-icon-box" id="slot-icon-${i}">❓</div>
+          <div class="perk-info"><div class="ptxt" id="slot-txt-${i}">...</div></div>
+        </div>`).join('')}
+    </div>
+    <div class="timer-bar-wrap"><div class="timer-bar" id="perk-timer" style="width:100%"></div></div>`;
+
+  const TOTAL=16000, PER=4000, TICK=110, start=Date.now();
+  const locked=new Set();
+
+  _survInterval=setInterval(()=>{
+    const el=Date.now()-start;
+    const prog=Math.min(el/TOTAL,1);
+    const bar=document.getElementById('perk-timer');
+    if(bar) bar.style.width=(100-prog*100)+'%';
+
+    let anyRolling=false;
+    [0,1,2,3].forEach(i=>{
+      if(locked.has(i)) return;
+      anyRolling=true;
+      const rand=allPerks[Math.floor(Math.random()*allPerks.length)];
+      const txtEl=document.getElementById('slot-txt-'+i);
+      const iconEl=document.getElementById('slot-icon-'+i);
+      if(txtEl) txtEl.textContent=rand?rand.perk[lang]:'...';
+      if(iconEl&&rand) iconEl.innerHTML=`<img src="${rand.img}" onerror="this.style.display='none';this.parentElement.innerHTML='❓'">`;
+    });
+    if(anyRolling) soundRollTick();
+
+    [0,1,2,3].forEach(i=>{
+      if(locked.has(i)) return;
+      if(el>=PER*(i+1)){
+        locked.add(i);
+        const slot=document.getElementById('slot-'+i);
+        if(slot){
+          slot.classList.remove('rolling'); slot.classList.add('done');
+          slot.innerHTML=`
+            <div class="perk-icon-box">
+              <img src="${finalPerks[i].img}" onerror="this.style.display='none';this.parentElement.innerHTML='✨'">
+            </div>
+            <div class="perk-info">
+              <div class="pname" data-perk-idx="${i}">${finalPerks[i].perk[lang]}</div>
+              <div class="pchar" data-char-idx="${i}">${finalPerks[i].char[lang]}</div>
+            </div>`;
+        }
+        soundPerkLock();
+      }
+    });
+
+    if(el>=TOTAL){
+      clearInterval(_survInterval); _survInterval=null;
+      finishSurvivorSpin(finalPerks, box);
+    }
+  },TICK);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// KILLER SPIN 
+// ══════════════════════════════════════════════════════════════════════════════
+function finishKillerSpin(finalIdx, available, box){
+  available.forEach(i=>{ const c=document.getElementById('kcard-'+i); if(c) c.classList.remove('highlight'); });
+  const wc=document.getElementById('kcard-'+finalIdx); if(wc) wc.classList.add('winner');
+  const k=KILLERS[finalIdx];
+  
+  const modBadgeHtml = useKillerMods ? `<span class="badge orange" id="killer-mod-badge">...</span>` : ``;
+
+  box.innerHTML=`
+    <div class="killer-spin-wrap">
+      ${k.img ? `<div class="killer-spin-img-box"><img src="${k.img}" alt="${kName(k)}"></div>` : `<div class="killer-spin-img-placeholder">☠</div>`}
+      <div class="killer-spin-text">
+        <div class="killer-spin-name" style="color:var(--cream)">${kName(k)}</div>
+        <div class="killer-spin-alias">${kAlias(k)}</div>
+      </div>
+    </div>
+    <div style="margin-top:12px; display:flex; gap:6px; justify-content:center;">
+      <span class="badge red" data-i="your_killer">${t('your_killer')}</span>
+      ${modBadgeHtml}
+    </div>`;
+  soundKillerReveal();
+  
+  if (useKillerMods) {
+    setTimeout(()=>showOverlay(finalIdx), 400);
+  }
+  
+  document.getElementById('killer-actions').style.display='flex';
+  const sb=document.getElementById('skip-killer-btn'); if(sb) sb.style.display='none';
+  setSpinning(false);
+}
+
+function skipKiller(){
+  if(!spinning||!_killInterval) return;
+  clearInterval(_killInterval); _killInterval=null;
+  const box=document.getElementById('killer-result');
+  const tw=document.getElementById('killer-timer'); if(tw) tw.closest('.timer-bar-wrap').remove();
+  const available=[...selectedKillers].filter(i=>!blockedKillers.has(i));
+  finishKillerSpin(_killFinalIdx, available, box);
+}
+
+function spinKiller(){
+  if(spinning) return;
+  const available=[...selectedKillers].filter(i=>!blockedKillers.has(i));
+  if(!available.length){
+    document.getElementById('killer-result').innerHTML=`<p class="empty-msg">${t('kill_empty')}</p>`;
+    document.getElementById('killer-actions').style.display='none';
+    return;
+  }
+  const finalIdx=available[Math.floor(Math.random()*available.length)];
+  lastKillerResult=finalIdx; _killFinalIdx=finalIdx;
+
+  if (useKillerMods) {
+    const modalidades = [
+      { idx: 0, weight: 45 }, { idx: 1, weight: 25 },
+      { idx: 2, weight: 15 }, { idx: 3, weight: 10 }, { idx: 4, weight: 5 }
+    ];
+    let rnd = Math.random() * 100;
+    let chosenIdx = 0;
+    for(let m of modalidades) { if(rnd < m.weight) { chosenIdx = m.idx; break; } rnd -= m.weight; }
+    _killFinalModIdx = chosenIdx; 
+    _killFinalMod = MODS_KEYS[chosenIdx];
+    
+    statsKillMods[chosenIdx] = (statsKillMods[chosenIdx] || 0) + 1;
+  } else {
+    _killFinalModIdx = 0; 
+    _killFinalMod = "mod_4p"; 
+  }
+  save();
+
+  setSpinning(true);
+  document.getElementById('killer-actions').style.display='none';
+  const sb=document.getElementById('skip-killer-btn'); if(sb) sb.style.display='block';
+
+  const box=document.getElementById('killer-result');
+  box.innerHTML=`
+    <div class="killer-spin-wrap">
+      <div class="killer-spin-img-placeholder" id="kspin-img">☠</div>
+      <div class="killer-spin-text">
+        <div class="killer-spin-name" id="kspin-name">...</div>
+        <div class="killer-spin-alias" id="kspin-alias">${t('spinning')}</div>
+      </div>
+    </div>
+    <div class="timer-bar-wrap"><div class="timer-bar" id="killer-timer" style="width:100%"></div></div>`;
+
+  const TOTAL=10000, TICK=80, start=Date.now();
+  let lastSwap=0;
+
+  function updateSpinImg(idx){
+    const k=KILLERS[idx];
+    const el2=document.getElementById('kspin-img');
+    if(!el2||!k.img) return;
+    el2.outerHTML=`<div class="killer-spin-img-box" id="kspin-img"><img src="${k.img}" alt="${kName(k)}" onerror="this.parentElement.innerHTML='☠';this.parentElement.className='killer-spin-img-placeholder';"></div>`;
+  }
+
+  available.forEach(i=>{ const c=document.getElementById('kcard-'+i); if(c) c.classList.add('highlight'); });
+
+  _killInterval=setInterval(()=>{
+    const el=Date.now()-start;
+    const prog=Math.min(el/TOTAL,1);
+    const bar=document.getElementById('killer-timer');
+    if(bar) bar.style.width=(100-prog*100)+'%';
+
+    const swapEvery=80+Math.pow(prog,2.2)*520;
+    if(el-lastSwap>swapEvery){
+      lastSwap=el;
+      const rand=available[Math.floor(Math.random()*available.length)];
+      const k=KILLERS[rand];
+      const ne=document.getElementById('kspin-name'); if(ne) ne.textContent=kName(k);
+      const ae=document.getElementById('kspin-alias'); if(ae) ae.textContent=kAlias(k);
+      available.forEach(i=>{ const c=document.getElementById('kcard-'+i); if(c) c.classList.toggle('highlight',i===rand); });
+      updateSpinImg(rand);
+      soundRollTick();
+    }
+
+    if(el>=TOTAL){
+      clearInterval(_killInterval); _killInterval=null;
+      const tw=document.getElementById('killer-timer'); if(tw) tw.closest('.timer-bar-wrap').remove();
+      finishKillerSpin(finalIdx, available, box);
+    }
+  },TICK);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FULLSCREEN OVERLAY Y RULETA DE MODALIDAD
+// ══════════════════════════════════════════════════════════════════════════════
+function showOverlay(idx){
+  const k=KILLERS[idx];
+  const imgWrap=document.getElementById('overlay-img-wrap');
+  if(k.img){
+    imgWrap.innerHTML=`<img class="killer-overlay-img" src="${k.img}" alt="${kName(k)}" onerror="this.style.display='none'">`;
+  } else {
+    imgWrap.innerHTML=`<div class="killer-overlay-placeholder">☠</div>`;
+  }
+  document.getElementById('overlay-name').textContent=kName(k);
+  document.getElementById('overlay-alias').textContent=kAlias(k);
+
+  for(let i=0; i<5; i++){
+    const b = document.getElementById('mod-box-'+i);
+    if(b){
+       b.className = 'mod-box'; 
+       b.textContent = t(MODS_KEYS[i]);
+    }
+  }
+
+  document.getElementById('overlay-hint').style.display = 'none'; 
+  
+  const skipBtn = document.getElementById('skip-overlay-btn');
+  if(skipBtn) skipBtn.style.display = 'block'; 
+
+  document.getElementById('killer-overlay').classList.add('show');
+  
+  _overlaySpinning = true;
+  const TOTAL_MOD = 9000; 
+  const TICK_MOD = 120;
+  const startMod = Date.now();
+  let lastModTick = 0;
+
+  _overlayInt = setInterval(()=>{
+    const el = Date.now() - startMod;
+    if(el - lastModTick > TICK_MOD) {
+       lastModTick = el;
+       for(let i=0; i<5; i++) document.getElementById('mod-box-'+i).classList.remove('rolling');
+       const r = Math.floor(Math.random()*5);
+       document.getElementById('mod-box-'+r).classList.add('rolling');
+       soundRollTick();
+    }
+
+    if(el >= TOTAL_MOD) {
+       finishOverlaySpin();
+    }
+  }, TICK_MOD);
+}
+
+function finishOverlaySpin() {
+  if(_overlayInt) {
+     clearInterval(_overlayInt);
+     _overlayInt = null;
+  }
+  _overlaySpinning = false;
+  
+  for(let i=0; i<5; i++) document.getElementById('mod-box-'+i).classList.remove('rolling');
+  
+  document.getElementById('mod-box-'+_killFinalModIdx).classList.add('winner');
+  document.getElementById('overlay-hint').textContent=t('overlay_hint');
+  document.getElementById('overlay-hint').style.display = 'block';
+  
+  const skipBtn = document.getElementById('skip-overlay-btn');
+  if(skipBtn) skipBtn.style.display = 'none';
+  
+  const badge = document.getElementById('killer-mod-badge');
+  if(badge) badge.textContent = t(MODS_KEYS[_killFinalModIdx]);
+  
+  soundFinalFanfare();
+}
+
+function skipOverlay(event){
+  if(event) event.stopPropagation(); 
+  if(!_overlaySpinning) return;
+  finishOverlaySpin();
+}
+
+function closeOverlay(){
+  if(_overlaySpinning) return; 
+  document.getElementById('killer-overlay').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// WIN / LOSS
+// ══════════════════════════════════════════════════════════════════════════════
+function markWin(){
+  if(lastKillerResult===null) return;
+  blockedKillers.add(lastKillerResult); 
+  
+  if (useKillerMods) {
+    let shortMod = "4 PERKS";
+    if(_killFinalModIdx === 1) shortMod = "3 PERKS";
+    if(_killFinalModIdx === 2) shortMod = "2 PERKS";
+    if(_killFinalModIdx === 3) shortMod = "1 PERK";
+    if(_killFinalModIdx === 4) shortMod = "0 PERKS";
+    blockedMods[lastKillerResult] = shortMod;
+  }
+  
+  save(); renderKillers();
+  
+  const k=KILLERS[lastKillerResult];
+  _lastWinLossKiller = lastKillerResult; 
+  document.getElementById('killer-result').innerHTML=`
+    <div style="font-family:'Oswald',sans-serif;text-align:center">
+      <div id="win-loss-kname" style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:var(--green2)">${kName(k)}</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:4px" data-i="blocked_until">${t('blocked_until')}</div>
+    </div>
+    <span class="badge green" style="margin-top:10px">&#10003; <span data-i="victory">${t('victory')}</span></span>`;
+  document.getElementById('killer-actions').style.display='none';
+  lastKillerResult=null;
+}
+function markLoss(){
+  if(lastKillerResult===null) return;
+  const k=KILLERS[lastKillerResult];
+  _lastWinLossKiller = lastKillerResult; 
+  const wc=document.getElementById('kcard-'+lastKillerResult);
+  if(wc) wc.classList.remove('winner');
+  document.getElementById('killer-result').innerHTML=`
+    <div style="font-family:'Oswald',sans-serif;text-align:center">
+      <div id="win-loss-kname" style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)">${kName(k)}</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:4px" data-i="still_free">${t('still_free')}</div>
+    </div>
+    <span class="badge red" style="margin-top:10px">&#10005; <span data-i="defeat">${t('defeat')}</span></span>`;
+  document.getElementById('killer-actions').style.display='none';
+  lastKillerResult=null;
+  _killFinalModIdx=null; _killFinalMod=null;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RESET ACECHES
+// ══════════════════════════════════════════════════════════════════════════════
+function resetAceches(){
+  if(spinning) return;
+  if(!confirm(t('confirm_reset'))) return;
+  
+  blockedKillers.clear(); 
+  blockedMods = {}; 
+  lastKillerResult=null; _lastWinLossKiller=null; 
+  _killFinalModIdx=null; _killFinalMod=null; 
+  save(); renderKillers();
+  
+  document.getElementById('killer-result').innerHTML=`<p class="empty-msg" data-i="week_reset">${t('week_reset')}</p>`;
+  document.getElementById('killer-actions').style.display='none';
+  KILLERS.forEach((_,i)=>{ const c=document.getElementById('kcard-'+i); if(c) c.classList.remove('winner','highlight'); });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+load();
+setLang(lang);
+renderSurvivors();
+renderKillers();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INTERRUPTORES DE CONFIGURACIÓN
+// ══════════════════════════════════════════════════════════════════════════════
+function toggleGeneralPerks(){
+  useGeneralPerks = !useGeneralPerks;
+  save(); updateToggleButtons();
+}
+function toggleKillerMods(){
+  useKillerMods = !useKillerMods;
+  save(); updateToggleButtons();
+}
+function updateToggleButtons(){
+  const bg = document.getElementById('btn-toggle-gen');
+  if(bg) {
+     bg.textContent = useGeneralPerks ? t('gen_on') : t('gen_off');
+     bg.style.borderColor = useGeneralPerks ? "var(--purple)" : "var(--muted)";
+     bg.style.color = useGeneralPerks ? "var(--purple)" : "var(--muted)";
+  }
+  const bm = document.getElementById('btn-toggle-mod');
+  if(bm) {
+     bm.textContent = useKillerMods ? t('mod_on') : t('mod_off');
+     bm.style.borderColor = useKillerMods ? "var(--orange)" : "var(--muted)";
+     bm.style.color = useKillerMods ? "var(--orange)" : "var(--muted)";
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PANEL DE ESTADÍSTICAS — tabla completa de todas las perks
+// ══════════════════════════════════════════════════════════════════════════════
+let _statsSortMode = 'count'; 
+
+function buildFullPerkCatalog(){
+  const catalog = []; 
+  const seen = new Set();
+  SURVIVORS.forEach(s => {
+    s.perks.en.forEach((pEn, pi) => {
+      if(!seen.has(pEn)){
+        seen.add(pEn);
+        catalog.push({ nameEs: s.perks.es[pi], nameEn: pEn, charEs: s.name.es||s.name.en, charEn: s.name.en });
+      }
+    });
+  });
+  GENERAL_PERKS.forEach(gp => {
+    if(!seen.has(gp.en)){
+      seen.add(gp.en);
+      catalog.push({ nameEs: gp.es, nameEn: gp.en, charEs: I18N.es.general_perks, charEn: I18N.en.general_perks });
+    }
+  });
+  return catalog;
+}
+
+function setSortStats(mode){
+  _statsSortMode = mode;
+  document.querySelectorAll('.stats-sort-btn').forEach(b => b.classList.remove('active'));
+  const btnMap = { count:'sort-count', zero:'sort-zero', alpha:'sort-alpha' };
+  const btn = document.getElementById(btnMap[mode]);
+  if(btn) btn.classList.add('active');
+  renderStatsTable();
+}
+
+function renderStatsTable(){
+  const catalog = buildFullPerkCatalog();
+  const query = (document.getElementById('stats-search')?.value || '').toLowerCase().trim();
+  const maxCount = Math.max(1, ...Object.values(statsSurvPerks));
+  const totalSpins = Object.values(statsSurvPerks).reduce((a,b)=>a+b, 0);
+  const totalPerks = catalog.length;
+  const seenPerks = catalog.filter(p => (statsSurvPerks[p.nameEs] || 0) > 0).length;
+  const zeroPerks = totalPerks - seenPerks;
+
+  const summaryEl = document.getElementById('stats-summary-row');
+  if(summaryEl) summaryEl.innerHTML = `
+    <div>Total apariciones: <span>${totalSpins}</span></div>
+    <div>Perks vistas: <span>${seenPerks} / ${totalPerks}</span></div>
+    <div>Sin aparecer: <span style="color:var(--muted)">${zeroPerks}</span></div>`;
+
+  let filtered = catalog.filter(p => {
+    const name = lang === 'es' ? p.nameEs : p.nameEn;
+    const char = lang === 'es' ? p.charEs : p.charEn;
+    return !query || name.toLowerCase().includes(query) || char.toLowerCase().includes(query);
+  });
+
+  filtered.sort((a, b) => {
+    const cA = statsSurvPerks[a.nameEs] || 0;
+    const cB = statsSurvPerks[b.nameEs] || 0;
+    if(_statsSortMode === 'count')  return cB - cA || a.nameEs.localeCompare(b.nameEs);
+    if(_statsSortMode === 'zero')   return cA - cB || a.nameEs.localeCompare(b.nameEs);
+    if(_statsSortMode === 'alpha')  return (lang==='es'?a.nameEs:a.nameEn).localeCompare(lang==='es'?b.nameEs:b.nameEn);
+    return 0;
+  });
+
+  function countColor(c){
+    if(c === 0)              return 'count-0';
+    if(c <= maxCount * 0.25) return 'count-low';
+    if(c <= maxCount * 0.5)  return 'count-mid';
+    if(c <= maxCount * 0.75) return 'count-high';
+    return 'count-top';
+  }
+
+  const tbody = document.getElementById('stats-tbody');
+  if(!tbody) return;
+
+  if(filtered.length === 0){
+    tbody.innerHTML = `<tr><td colspan="2" style="color:var(--muted);text-align:center;padding:20px;">${t('stats_empty')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => {
+    const count = statsSurvPerks[p.nameEs] || 0;
+    const pct = maxCount > 0 ? (count / maxCount * 100).toFixed(0) : 0;
+    const name = lang === 'es' ? p.nameEs : p.nameEn;
+    const char = lang === 'es' ? p.charEs : p.charEn;
+    const barColor = count === 0 ? 'var(--border)' :
+                     count <= maxCount*0.25 ? 'var(--muted)' :
+                     count <= maxCount*0.5  ? 'var(--cream)' :
+                     count <= maxCount*0.75 ? 'var(--orange)' : 'var(--red2)';
+    return `<tr>
+      <td class="count-cell ${countColor(count)}">${count}</td>
+      <td>
+        <div>${name}</div>
+        <div class="stats-perk-char">${char}</div>
+        <div class="stats-bar"><div class="stats-bar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function showStats(){
+  if(!statsKillMods) statsKillMods = {0:0,1:0,2:0,3:0,4:0};
+  if(!statsSurvPerks) statsSurvPerks = {};
+
+  const killSummary = document.getElementById('stats-kill-summary');
+  if(killSummary){
+    const totalK = Object.values(statsKillMods).reduce((a,b)=>a+b,0);
+    killSummary.innerHTML = `
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'Oswald',sans-serif;">${t('stats_kill')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${[0,1,2,3,4].map(i=>{
+          const colors=['var(--green2)','var(--cream)','var(--cream)','var(--orange)','var(--red2)'];
+          const labels=['4P','3P','2P','1P','0P'];
+          const v=statsKillMods[i]||0;
+          return `<div style="background:var(--surf);border:1px solid var(--border);padding:5px 10px;font-family:'Oswald',sans-serif;font-size:11px;text-align:center;">
+            <div style="color:${colors[i]};font-size:16px;font-weight:700;">${v}</div>
+            <div style="color:var(--muted);font-size:9px;">${labels[i]}</div>
+          </div>`;
+        }).join('')}
+        <div style="background:var(--surf);border:1px solid var(--border);padding:5px 10px;font-family:'Oswald',sans-serif;font-size:11px;text-align:center;">
+          <div style="color:var(--muted);font-size:16px;font-weight:700;">${totalK}</div>
+          <div style="color:var(--muted);font-size:9px;">TOTAL</div>
+        </div>
+      </div>`;
+  }
+
+  const searchEl = document.getElementById('stats-search');
+  if(searchEl) searchEl.value = '';
+  _statsSortMode = 'count';
+  document.querySelectorAll('.stats-sort-btn').forEach(b=>b.classList.remove('active'));
+  const sc = document.getElementById('sort-count'); if(sc) sc.classList.add('active');
+  renderStatsTable();
+  document.getElementById('stats-overlay').classList.add('show');
+}
+
+function closeStats(){
+  document.getElementById('stats-overlay').classList.remove('show');
+}
+
+function resetStats(){
+  if(!confirm(t('confirm_clear'))) return;
+  statsSurvPerks = {};
+  statsKillMods = {0:0,1:0,2:0,3:0,4:0};
+  save();
+  showStats();
+}
+</script>
+</body>
+</html>

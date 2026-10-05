@@ -1,0 +1,13 @@
+# Herramientas locales
+.claude/
+
+# Archivos sueltos que no pertenecen al proyecto
+*.exe
+*.rar
+*.zip
+img/perks/*.jpg
+img/perks/*.png
+
+# Sistema
+Thumbs.db
+.DS_Store
