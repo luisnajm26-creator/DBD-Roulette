@@ -45,7 +45,16 @@ const I18N = {
     times: "veces",
     btn_clear_stats: "BORRAR DATOS",
     btn_close: "CERRAR",
-    confirm_clear: "¿Estás seguro de que deseas reiniciar todos los contadores a cero?"
+    confirm_clear: "¿Estás seguro de que deseas reiniciar todos los contadores a cero?",
+    // INTERFAZ
+    stats_label: "Estadísticas",
+    sound_on: "Sonido", sound_off: "Silencio",
+    sound_on_title: "Sonido activado: clic para silenciar", sound_off_title: "Sonido desactivado: clic para activar",
+    speed_normal: "Normal", speed_fast: "Rápido",
+    speed_normal_title: "Animación normal: clic para acelerar", speed_fast_title: "Animación rápida: clic para volver a normal",
+    search_char: "Buscar personaje o perk…", search_kill: "Buscar asesino…", no_results: "Sin resultados",
+    stats_search: "Buscar perk…", stats_sort: "Ordenar:", sort_count: "Más usadas", sort_zero: "Sin uso primero", th_perk: "PERK",
+    stats_total: "Total apariciones", stats_seen: "Perks vistas", stats_unseen: "Sin aparecer"
   },
   en: {
     title:"DBD ROULETTE",
@@ -90,6 +99,15 @@ const I18N = {
     times: "times",
     btn_clear_stats: "CLEAR DATA",
     btn_close: "CLOSE",
-    confirm_clear: "Are you sure you want to reset all counters to zero?"
+    confirm_clear: "Are you sure you want to reset all counters to zero?",
+    // UI
+    stats_label: "Stats",
+    sound_on: "Sound", sound_off: "Muted",
+    sound_on_title: "Sound on: click to mute", sound_off_title: "Sound off: click to unmute",
+    speed_normal: "Normal", speed_fast: "Fast",
+    speed_normal_title: "Normal animation: click to speed up", speed_fast_title: "Fast animation: click to switch back to normal",
+    search_char: "Search character or perk…", search_kill: "Search killer…", no_results: "No results",
+    stats_search: "Search perk…", stats_sort: "Sort:", sort_count: "Most used", sort_zero: "Unused first", th_perk: "PERK",
+    stats_total: "Total appearances", stats_seen: "Perks seen", stats_unseen: "Never appeared"
   }
 };

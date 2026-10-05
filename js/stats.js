@@ -34,7 +34,7 @@ function setSortStats(mode){
 
 function renderStatsTable(){
   const catalog = buildFullPerkCatalog();
-  const query = (document.getElementById('stats-search')?.value || '').toLowerCase().trim();
+  const query = norm(document.getElementById('stats-search')?.value || '');
   const maxCount = Math.max(1, ...Object.values(statsSurvPerks));
   const totalSpins = Object.values(statsSurvPerks).reduce((a,b)=>a+b, 0);
   const totalPerks = catalog.length;
@@ -43,14 +43,14 @@ function renderStatsTable(){
 
   const summaryEl = document.getElementById('stats-summary-row');
   if(summaryEl) summaryEl.innerHTML = `
-    <div>Total apariciones: <span>${totalSpins}</span></div>
-    <div>Perks vistas: <span>${seenPerks} / ${totalPerks}</span></div>
-    <div>Sin aparecer: <span style="color:var(--muted)">${zeroPerks}</span></div>`;
+    <div>${t('stats_total')}: <span>${totalSpins}</span></div>
+    <div>${t('stats_seen')}: <span>${seenPerks} / ${totalPerks}</span></div>
+    <div>${t('stats_unseen')}: <span style="color:var(--muted)">${zeroPerks}</span></div>`;
 
   let filtered = catalog.filter(p => {
     const name = lang === 'es' ? p.nameEs : p.nameEn;
     const char = lang === 'es' ? p.charEs : p.charEn;
-    return !query || name.toLowerCase().includes(query) || char.toLowerCase().includes(query);
+    return !query || norm(name).includes(query) || norm(char).includes(query);
   });
 
   filtered.sort((a, b) => {
@@ -106,20 +106,20 @@ function showStats(){
   if(killSummary){
     const totalK = Object.values(statsKillMods).reduce((a,b)=>a+b,0);
     killSummary.innerHTML = `
-      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'Oswald',sans-serif;">${t('stats_kill')}</div>
+      <div class="stats-sort-label" style="margin-bottom:6px;">${t('stats_kill')}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         ${[0,1,2,3,4].map(i=>{
           const colors=['var(--green2)','var(--cream)','var(--cream)','var(--orange)','var(--red2)'];
           const labels=['4P','3P','2P','1P','0P'];
           const v=statsKillMods[i]||0;
-          return `<div style="background:var(--surf);border:1px solid var(--border);padding:5px 10px;font-family:'Oswald',sans-serif;font-size:11px;text-align:center;">
-            <div style="color:${colors[i]};font-size:16px;font-weight:700;">${v}</div>
-            <div style="color:var(--muted);font-size:9px;">${labels[i]}</div>
+          return `<div class="stat-chip">
+            <b style="color:${colors[i]}">${v}</b>
+            <small>${labels[i]}</small>
           </div>`;
         }).join('')}
-        <div style="background:var(--surf);border:1px solid var(--border);padding:5px 10px;font-family:'Oswald',sans-serif;font-size:11px;text-align:center;">
-          <div style="color:var(--muted);font-size:16px;font-weight:700;">${totalK}</div>
-          <div style="color:var(--muted);font-size:9px;">TOTAL</div>
+        <div class="stat-chip">
+          <b style="color:var(--muted)">${totalK}</b>
+          <small>TOTAL</small>
         </div>
       </div>`;
   }

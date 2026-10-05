@@ -153,7 +153,9 @@ function spinSurvivor(){
     </div>
     <div class="timer-bar-wrap"><div class="timer-bar" id="perk-timer" style="width:100%"></div></div>`;
 
-  const TOTAL=16000, PER=4000, TICK=110, start=Date.now();
+  const k=speedScale();
+  const TOTAL=16000*k, PER=4000*k, TICK=110, start=Date.now();
+  revealResult('surv-result');
   const locked=new Set();
 
   _survInterval=setInterval(()=>{

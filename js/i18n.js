@@ -11,7 +11,11 @@ function setLang(l){
   document.getElementById('header-sub').textContent = t('header_sub');
   
   document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
-  
+  document.querySelectorAll('[data-i-title]').forEach(el => { el.title = t(el.dataset.iTitle); });
+  document.querySelectorAll('[data-i-ph]').forEach(el => { el.placeholder = t(el.dataset.iPh); });
+  document.querySelectorAll('[data-i-label]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.iLabel)); });
+  document.documentElement.lang = l;
+
   renderSurvivors();
   renderKillers();
   
@@ -48,9 +52,10 @@ function setLang(l){
      modBadge.textContent = t(_killFinalMod);
   }
 
-  // ── ESTO ES LO QUE FALTABA (Traduce los botones ON/OFF) ──
+  // Traduce los botones ON/OFF y los de sonido/velocidad
   if(typeof updateToggleButtons === 'function') {
      updateToggleButtons();
+     updateSettingButtons();
   }
 
   try{ localStorage.setItem('dbd_lang', l); }catch(e){}

@@ -84,14 +84,15 @@ function spinKiller(){
     </div>
     <div class="timer-bar-wrap"><div class="timer-bar" id="killer-timer" style="width:100%"></div></div>`;
 
-  const TOTAL=10000, TICK=80, start=Date.now();
+  const TOTAL=10000*speedScale(), TICK=80, start=Date.now();
   let lastSwap=0;
+  revealResult('killer-result');
 
   function updateSpinImg(idx){
     const k=KILLERS[idx];
     const el2=document.getElementById('kspin-img');
     if(!el2||!k.img) return;
-    el2.outerHTML=`<div class="killer-spin-img-box" id="kspin-img"><img src="${k.img}" alt="${kName(k)}" onerror="this.parentElement.innerHTML='☠';this.parentElement.className='killer-spin-img-placeholder';"></div>`;
+    el2.outerHTML=`<div class="killer-spin-img-box" id="kspin-img"><img src="${thumbOf(k.img)}" alt="${kName(k)}" onerror="this.parentElement.innerHTML='☠';this.parentElement.className='killer-spin-img-placeholder';"></div>`;
   }
 
   available.forEach(i=>{ const c=document.getElementById('kcard-'+i); if(c) c.classList.add('highlight'); });
@@ -152,7 +153,7 @@ function showOverlay(idx){
   document.getElementById('killer-overlay').classList.add('show');
   
   _overlaySpinning = true;
-  const TOTAL_MOD = 9000; 
+  const TOTAL_MOD = 9000 * speedScale();
   const TICK_MOD = 120;
   const startMod = Date.now();
   let lastModTick = 0;
@@ -228,8 +229,8 @@ function markWin(){
   _lastWinLossKiller = lastKillerResult; 
   document.getElementById('killer-result').innerHTML=`
     <div style="font-family:'Oswald',sans-serif;text-align:center">
-      <div id="win-loss-kname" style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:var(--green2)">${kName(k)}</div>
-      <div style="font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:4px" data-i="blocked_until">${t('blocked_until')}</div>
+      <div id="win-loss-kname" class="result-title" style="color:var(--green2)">${kName(k)}</div>
+      <div class="result-sub" data-i="blocked_until">${t('blocked_until')}</div>
     </div>
     <span class="badge green" style="margin-top:10px">&#10003; <span data-i="victory">${t('victory')}</span></span>`;
   document.getElementById('killer-actions').style.display='none';
@@ -243,8 +244,8 @@ function markLoss(){
   if(wc) wc.classList.remove('winner');
   document.getElementById('killer-result').innerHTML=`
     <div style="font-family:'Oswald',sans-serif;text-align:center">
-      <div id="win-loss-kname" style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)">${kName(k)}</div>
-      <div style="font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:4px" data-i="still_free">${t('still_free')}</div>
+      <div id="win-loss-kname" class="result-title" style="color:var(--muted)">${kName(k)}</div>
+      <div class="result-sub" data-i="still_free">${t('still_free')}</div>
     </div>
     <span class="badge red" style="margin-top:10px">&#10005; <span data-i="defeat">${t('defeat')}</span></span>`;
   document.getElementById('killer-actions').style.display='none';

@@ -7,6 +7,7 @@ function getCtx(){
   return audioCtx;
 }
 function playTone(freq, type, duration, vol){
+  if(!soundOn) return;
   try{
     const ctx = getCtx();
     const o = ctx.createOscillator();
@@ -28,6 +29,7 @@ function soundKillerReveal(){
   setTimeout(()=>playTone(440,'square',.5,.2),450);
 }
 function soundRollTick(){
+  if(!soundOn) return;
   try{
     const ctx=getCtx();
     const buf=ctx.createBuffer(1,Math.floor(ctx.sampleRate*0.03),ctx.sampleRate);

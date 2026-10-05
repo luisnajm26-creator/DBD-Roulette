@@ -12,6 +12,8 @@ function save(){
     localStorage.setItem('dbd_use_gen', useGeneralPerks); 
     localStorage.setItem('dbd_use_mod', useKillerMods);   
     localStorage.setItem('dbd_lang', lang);
+    localStorage.setItem('dbd_sound', soundOn);
+    localStorage.setItem('dbd_speed', speedFast ? 'fast' : 'normal');
   }catch(e){}
 }
 function load(){
@@ -32,5 +34,7 @@ function load(){
     if(l) lang=l;
     const ug=localStorage.getItem('dbd_use_gen'); if(ug!==null) useGeneralPerks=(ug==='true');
     const um=localStorage.getItem('dbd_use_mod'); if(um!==null) useKillerMods=(um==='true');
+    const so=localStorage.getItem('dbd_sound'); if(so!==null) soundOn=(so==='true');
+    const sp=localStorage.getItem('dbd_speed'); if(sp!==null) speedFast=(sp==='fast');
   }catch(e){}
 }

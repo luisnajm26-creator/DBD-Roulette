@@ -2,140 +2,170 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>DBD Ruleta</title>
+<meta name="description" content="Ruleta no oficial para Dead by Daylight: sortea perks de supervivientes y asesinos con modalidades.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-<!-- KILLER FULLSCREEN OVERLAY -->
-<div class="killer-overlay" id="killer-overlay" onclick="closeOverlay()">
+<!-- PANTALLA COMPLETA DEL ASESINO + RULETA DE MODALIDAD -->
+<div class="killer-overlay" id="killer-overlay" onclick="closeOverlay()" role="dialog" aria-modal="true" aria-labelledby="overlay-name">
   <div id="overlay-img-wrap"></div>
   <div class="killer-overlay-name" id="overlay-name"></div>
   <div class="killer-overlay-alias" id="overlay-alias"></div>
-  
-  <!-- RULETA DE MODALIDAD -->
+
   <div class="killer-mod-container" id="overlay-mod-container">
-     <div class="mod-box" id="mod-box-0"></div>
-     <div class="mod-box" id="mod-box-1"></div>
-     <div class="mod-box" id="mod-box-2"></div>
-     <div class="mod-box" id="mod-box-3"></div>
-     <div class="mod-box" id="mod-box-4"></div>
+    <div class="mod-box" id="mod-box-0"></div>
+    <div class="mod-box" id="mod-box-1"></div>
+    <div class="mod-box" id="mod-box-2"></div>
+    <div class="mod-box" id="mod-box-3"></div>
+    <div class="mod-box" id="mod-box-4"></div>
   </div>
 
-  <button class="small-btn" id="skip-overlay-btn" onclick="skipOverlay(event)" style="margin-top:24px;border-color:var(--orange);color:var(--orange);display:none;width:150px;flex:none;">&#9654; <span data-i="skip">SALTAR</span></button>
-  
+  <button class="small-btn skip-btn" id="skip-overlay-btn" onclick="skipOverlay(event)" style="margin-top:24px;display:none;width:150px;flex:none;">&#9654; <span data-i="skip">SALTAR</span></button>
+
   <div class="killer-overlay-hint" id="overlay-hint">CLICK PARA CERRAR</div>
 </div>
 
 <div class="app">
-  <div class="header">
-    <div class="header-right" style="display:flex; align-items:center; gap:15px;">
-        <button class="small-btn" onclick="showStats()" style="border-color:var(--orange);color:var(--orange);margin:0;padding:0 12px; height:32px; flex:none;" data-i="stats_btn">📊 ESTADÍSTICAS</button>      <div>
+  <header class="header">
+    <div class="brand">
+      <h1>&#9760; <span id="header-title">DBD RULETA</span></h1>
+      <p id="header-sub">Dead by Daylight</p>
+    </div>
+    <div class="toolbar">
+      <button class="icon-btn accent" id="btn-stats" onclick="showStats()" data-i-title="stats_label"><span aria-hidden="true">&#128202;</span> <span class="lbl" data-i="stats_label">Estadísticas</span></button>
+      <button class="icon-btn" id="btn-speed" onclick="toggleSpeed()" aria-pressed="false"><span aria-hidden="true">&#9889;</span> <span class="lbl" id="speed-lbl">Normal</span></button>
+      <button class="icon-btn" id="btn-sound" onclick="toggleSound()" aria-pressed="true"><span id="sound-ic" aria-hidden="true">&#128266;</span> <span class="lbl" id="sound-lbl">Sonido</span></button>
+      <div class="lang-group" role="group" aria-label="Idioma">
         <button class="lang-btn active" onclick="setLang('es')">ES</button>
         <button class="lang-btn" onclick="setLang('en')">EN</button>
       </div>
     </div>
-    <h1>&#9760; <span id="header-title">DBD RULETA</span></h1>
-    <p id="header-sub">Herramienta de entretenimiento &mdash; Dead by Daylight</p>
-  </div>
+  </header>
 
-  <div class="tabs">
-    <button class="tab active" id="tab-surv" onclick="switchTab('survivor')">&#128697; <span data-i="tab_surv">SUPERVIVIENTES</span></button>
-    <button class="tab" id="tab-killer" onclick="switchTab('killer')">&#128299; <span data-i="tab_kill">KILLERS</span></button>
+  <div class="tabs" role="tablist">
+    <button class="tab active" id="tab-surv" role="tab" aria-selected="true" onclick="switchTab('survivor')">&#128697; <span data-i="tab_surv">SUPERVIVIENTES</span></button>
+    <button class="tab" id="tab-killer" role="tab" aria-selected="false" onclick="switchTab('killer')">&#128299; <span data-i="tab_kill">KILLERS</span></button>
   </div>
 
   <!-- ══ SUPERVIVIENTES ══ -->
- <div id="panel-survivor" class="panel active">
-    <div class="section-title" data-i="surv_title">Personajes con Prestigio 1 o 3 desbloqueados</div>
-    <div class="info-row">
-      <span data-i="surv_hint">Marca quiénes tienes prestidigiados</span>
-      <span id="surv-count">0 <span data-i="selected">seleccionados</span></span>
+  <section id="panel-survivor" class="panel active" role="tabpanel">
+    <div class="panel-head">
+      <div class="section-title" data-i="surv_title">Personajes con Prestigio 1 - 3 desbloqueados</div>
+      <div class="info-row">
+        <span data-i="surv_hint">Marca quiénes tienes prestigiados</span>
+        <span id="surv-count">0 <span data-i="selected">seleccionados</span></span>
+      </div>
+      <div class="tools-row">
+        <input class="search-input" id="surv-search" type="search" autocomplete="off" data-i-ph="search_char" data-i-label="search_char" oninput="applyFilter('surv')">
+        <button class="small-btn" onclick="selectAllSurv()" data-i="select_all">Seleccionar todos</button>
+        <button class="small-btn" onclick="clearSurv()" data-i="clear_sel">Limpiar selección</button>
+      </div>
     </div>
+
     <div class="char-grid" id="surv-grid"></div>
-    <div class="result-box" id="surv-result">
-      <p class="empty-msg" data-i="surv_empty">Selecciona personajes y gira la ruleta</p>
-    </div>
-    <button class="spin-btn" id="spin-surv-btn" onclick="spinSurvivor()">&#127922; <span data-i="spin_perks">GIRAR PERKS</span></button>
-    <button class="small-btn" id="skip-surv-btn" onclick="skipSurvivor()" style="margin-top:6px;border-color:var(--orange);color:var(--orange);display:none">&#9654; <span data-i="skip">SALTAR</span></button>
-    <div class="actions-row">
-      <button class="small-btn" onclick="selectAllSurv()" data-i="select_all">Seleccionar todos</button>
-      <button class="small-btn" onclick="clearSurv()" data-i="clear_sel">Limpiar selección</button>
-      <button id="btn-toggle-gen" class="small-btn" onclick="toggleGeneralPerks()" style="border-color:var(--purple);color:var(--purple);">Perks Generales: ON</button>
-    </div>
-  </div>
+    <p class="no-results" id="surv-noresults" data-i="no_results" hidden>Sin resultados</p>
 
-  <div id="panel-killer" class="panel">
-    <div class="section-title" data-i="kill_title">Asesinos disponibles</div>
-    <div class="info-row">
-      <span data-i="kill_hint">Tachados = ya jugados con victoria</span>
-      <span id="killer-count">0 <span data-i="available">disponibles</span></span>
+    <div class="side">
+      <div class="result-box" id="surv-result" aria-live="polite">
+        <p class="empty-msg" data-i="surv_empty">Selecciona personajes y gira la ruleta</p>
+      </div>
+      <div class="spin-bar">
+        <button class="spin-btn" id="spin-surv-btn" onclick="spinSurvivor()">&#127922; <span data-i="spin_perks">GIRAR PERKS</span></button>
+        <button class="small-btn skip-btn" id="skip-surv-btn" onclick="skipSurvivor()" style="display:none">&#9654; <span data-i="skip">SALTAR</span></button>
+      </div>
+      <div class="actions-row">
+        <button id="btn-toggle-gen" class="small-btn tog purple" onclick="toggleGeneralPerks()">Perks Generales: ON</button>
+      </div>
     </div>
+  </section>
+
+  <!-- ══ ASESINOS ══ -->
+  <section id="panel-killer" class="panel" role="tabpanel">
+    <div class="panel-head">
+      <div class="section-title" data-i="kill_title">Asesinos disponibles</div>
+      <div class="info-row">
+        <span data-i="kill_hint">Tachados = ya jugados con victoria</span>
+        <span id="killer-count">0 <span data-i="available">disponibles</span></span>
+      </div>
+      <div class="tools-row">
+        <input class="search-input" id="kill-search" type="search" autocomplete="off" data-i-ph="search_kill" data-i-label="search_kill" oninput="applyFilter('kill')">
+        <button class="small-btn" onclick="selectAllKillers()" data-i="select_all">Seleccionar todos</button>
+        <button class="small-btn" onclick="clearKillers()" data-i="clear_sel">Limpiar selección</button>
+      </div>
+    </div>
+
     <div class="killer-card-grid" id="killer-grid"></div>
-    <div class="result-box" id="killer-result">
-      <p class="empty-msg" data-i="kill_empty">Selecciona asesinos y gira la ruleta</p>
+    <p class="no-results" id="kill-noresults" data-i="no_results" hidden>Sin resultados</p>
+
+    <div class="side">
+      <div class="result-box" id="killer-result" aria-live="polite">
+        <p class="empty-msg" data-i="kill_empty">Selecciona asesinos y gira la ruleta</p>
+      </div>
+      <div class="actions-row" id="killer-actions" style="display:none;">
+        <button class="small-btn success" id="btn-win" onclick="markWin()">&#10003; <span data-i="won">GANÉ — BLOQUEAR</span></button>
+        <button class="small-btn" id="btn-loss" onclick="markLoss()">&#10005; <span data-i="lost">PERDÍ — DEJAR LIBRE</span></button>
+      </div>
+      <div class="spin-bar">
+        <button class="spin-btn" id="spin-killer-btn" onclick="spinKiller()">&#127922; <span data-i="spin_killer">GIRAR ASESINO</span></button>
+        <button class="small-btn skip-btn" id="skip-killer-btn" onclick="skipKiller()" style="display:none">&#9654; <span data-i="skip">SALTAR</span></button>
+      </div>
+      <div class="actions-row">
+        <button id="btn-toggle-mod" class="small-btn tog" onclick="toggleKillerMods()">Evento Modalidad: ON</button>
+        <button class="small-btn danger" onclick="resetAceches()" data-i="reset_aceches">↺ REINICIAR ACECHES</button>
+      </div>
     </div>
-    <button class="spin-btn" id="spin-killer-btn" onclick="spinKiller()">&#127922; <span data-i="spin_killer">GIRAR ASESINO</span></button>
-    <button class="small-btn" id="skip-killer-btn" onclick="skipKiller()" style="margin-top:6px;border-color:var(--orange);color:var(--orange);display:none">&#9654; <span data-i="skip">SALTAR</span></button>
-    <div class="actions-row" id="killer-actions" style="display:none;">
-      <button class="small-btn success" id="btn-win" onclick="markWin()">&#10003; <span data-i="won">GANÉ — BLOQUEAR</span></button>
-      <button class="small-btn" id="btn-loss" onclick="markLoss()">&#10005; <span data-i="lost">PERDÍ — DEJAR LIBRE</span></button>
-    </div>
-    <div class="actions-row">
-      <button class="small-btn" onclick="selectAllKillers()" data-i="select_all">Seleccionar todos</button>
-      <button class="small-btn" onclick="clearKillers()" data-i="clear_sel">Limpiar selección</button>
-      <button id="btn-toggle-mod" class="small-btn" onclick="toggleKillerMods()" style="border-color:var(--orange);color:var(--orange);">Evento Modalidad: ON</button>
-      <button class="small-btn danger" onclick="resetAceches()" data-i="reset_aceches">↺ REINICIAR ACECHES</button>
-    </div>
-  </div>
-<!-- ══ FOOTER / LEGAL ══ -->
-  <div class="footer-legal">
-    <p><span data-i="footer_dev">Desarrollado por</span> <span>Luis A.</span> <span data-i="footer_community">para la comunidad.</span></p>
+  </section>
+
+  <!-- ══ FOOTER / LEGAL ══ -->
+  <footer class="footer-legal">
+    <p><span data-i="footer_dev">Desarrollado por</span> <span class="hl">Luis A.</span> <span data-i="footer_community">para la comunidad.</span></p>
     <p data-i="footer_nonprofit">Esta página es una herramienta no oficial sin fines de lucro, creada puramente para el entretenimiento de los jugadores.</p>
-    <p><span data-i="footer_copyright">Dead by Daylight y todos los recursos, personajes e imágenes relacionados son marcas registradas de</span> <span>Behaviour Interactive Inc.</span> <span data-i="footer_rights">Todos los derechos reservados.</span></p>
-  </div>
-</div> <!-- Este es el cierre de div class="app" que ya tenías -->
+    <p><span data-i="footer_copyright">Dead by Daylight y todos los recursos, personajes e imágenes relacionados son marcas registradas de</span> <span class="hl">Behaviour Interactive Inc.</span> <span data-i="footer_rights">Todos los derechos reservados.</span></p>
+  </footer>
+</div>
+
 <!-- MODAL DE ESTADÍSTICAS -->
-  <div class="killer-overlay" id="stats-overlay" onclick="closeStats()">
-    <div class="stats-modal-inner" onclick="event.stopPropagation()">
-      <h2 data-i="stats_title" style="color:var(--orange);font-family:'Oswald',sans-serif;letter-spacing:2px;margin-bottom:14px;text-align:center;flex-shrink:0;">ESTADÍSTICAS DE RULETA</h2>
+<div class="killer-overlay" id="stats-overlay" onclick="closeStats()" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+  <div class="stats-modal-inner" onclick="event.stopPropagation()">
+    <h2 id="stats-title" class="stats-title" data-i="stats_title">ESTADÍSTICAS DE RULETA</h2>
 
-      <!-- Resumen rápido modalidades killer -->
-      <div id="stats-kill-summary" style="margin-bottom:14px;flex-shrink:0;"></div>
+    <div id="stats-kill-summary" class="no-shrink" style="margin-bottom:14px;"></div>
 
-      <!-- Buscador + ordenación -->
-      <div style="flex-shrink:0;">
-        <input class="stats-search" id="stats-search" type="text" placeholder="🔍 Buscar perk..." oninput="renderStatsTable()">
-        <div class="stats-sort-row">
-          <span style="font-size:10px;color:var(--muted);align-self:center;font-family:Oswald,sans-serif;letter-spacing:1px;text-transform:uppercase;">Ordenar:</span>
-          <button class="stats-sort-btn active" id="sort-count" onclick="setSortStats('count')">Más usadas</button>
-          <button class="stats-sort-btn" id="sort-zero" onclick="setSortStats('zero')">Sin uso primero</button>
-          <button class="stats-sort-btn" id="sort-alpha" onclick="setSortStats('alpha')">A → Z</button>
-        </div>
-        <div class="stats-summary" id="stats-summary-row"></div>
+    <div class="no-shrink">
+      <input class="stats-search" id="stats-search" type="search" autocomplete="off" data-i-ph="stats_search" data-i-label="stats_search" oninput="renderStatsTable()">
+      <div class="stats-sort-row">
+        <span class="stats-sort-label" data-i="stats_sort">Ordenar:</span>
+        <button class="stats-sort-btn active" id="sort-count" onclick="setSortStats('count')" data-i="sort_count">Más usadas</button>
+        <button class="stats-sort-btn" id="sort-zero" onclick="setSortStats('zero')" data-i="sort_zero">Sin uso primero</button>
+        <button class="stats-sort-btn" id="sort-alpha" onclick="setSortStats('alpha')">A → Z</button>
       </div>
+      <div class="stats-summary" id="stats-summary-row"></div>
+    </div>
 
-      <!-- Tabla de perks -->
-      <div class="stats-table-wrap">
-        <table class="stats-table">
-          <thead>
-            <tr>
-              <th style="width:60px" onclick="setSortStats('count')">#</th>
-              <th onclick="setSortStats('alpha')">PERK</th>
-            </tr>
-          </thead>
-          <tbody id="stats-tbody"></tbody>
-        </table>
-      </div>
+    <div class="stats-table-wrap">
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th style="width:60px" onclick="setSortStats('count')">#</th>
+            <th onclick="setSortStats('alpha')" data-i="th_perk">PERK</th>
+          </tr>
+        </thead>
+        <tbody id="stats-tbody"></tbody>
+      </table>
+    </div>
 
-      <div style="display:flex;justify-content:space-between;gap:10px;flex-shrink:0;">
-        <button class="small-btn danger" onclick="resetStats()" style="flex:1;" data-i="btn_clear_stats">BORRAR DATOS</button>
-        <button class="small-btn" onclick="closeStats()" style="flex:1;" data-i="btn_close">CERRAR</button>
-      </div>
+    <div class="no-shrink" style="display:flex;justify-content:space-between;gap:10px;">
+      <button class="small-btn danger" onclick="resetStats()" style="flex:1;" data-i="btn_clear_stats">BORRAR DATOS</button>
+      <button class="small-btn" onclick="closeStats()" style="flex:1;" data-i="btn_close">CERRAR</button>
     </div>
   </div>
+</div>
+
 <!-- Scripts clásicos en orden (sin módulos ES para que funcione abriendo el archivo con doble clic) -->
 <script defer src="data/i18n.js"></script>
 <script defer src="data/perks.js"></script>
