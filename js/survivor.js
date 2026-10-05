@@ -15,17 +15,18 @@ function buildPerkPool(pool){
   function addPerk(perkEs, perkEn, charEs, charEn){
     if(seen.has(perkEn)) return;
     seen.add(perkEn);
-    const clean = perkEn.toLowerCase().replace(/[^a-z0-9]/g,'');
+    const id = perkId(perkEn);
     const baseWeight = ESCAPE_PERKS.has(perkEn) ? 2 : 1;
-    const timesSeen = statsSurvPerks[perkEs] || 0;
+    const timesSeen = statsSurvPerks[id] || 0;
     const allCounts = Object.values(statsSurvPerks);
     const maxSeen = allCounts.length > 0 ? Math.max(...allCounts) : 0;
     const rarityFactor = maxSeen > 0 ? (1 + 2 * (1 - timesSeen / maxSeen)) : 3.0;
     const finalWeight = baseWeight * rarityFactor;
     all.push({
+      id,
       perk: { es: perkEs, en: perkEn },
       char: { es: charEs, en: charEn },
-      img: `img/perks/${clean}.webp`,
+      img: `img/perks/${id}.webp`,
       weight: finalWeight
     });
   }
@@ -62,7 +63,10 @@ function finishSurvivorSpin(finalPerks, box){
   });
   const tw=document.getElementById('perk-timer');
   if(tw) tw.closest('.timer-bar-wrap').remove();
-  box.insertAdjacentHTML('beforeend',`<span class="badge orange" data-i="perks_ready">${t('perks_ready')}</span>`);
+  box.insertAdjacentHTML('beforeend',`<div class="result-actions">
+      <span class="badge orange" data-i="perks_ready">${t('perks_ready')}</span>
+      <button class="small-btn copy-btn" onclick="copyBuild(this)"><span data-i="copy_build">${t('copy_build')}</span></button>
+    </div>`);
   soundFinalFanfare();
   const sb=document.getElementById('skip-surv-btn'); if(sb) sb.style.display='none';
   setSpinning(false);
@@ -133,10 +137,9 @@ function spinSurvivor(){
   lastSpinPerks = new Set(finalPerks.map(p => p.perk.en).filter(en => en !== I18N.en.empty_slot));
 
   finalPerks.forEach(p => {
-    if(p.perk.en !== I18N.en.empty_slot){
-      statsSurvPerks[p.perk.es] = (statsSurvPerks[p.perk.es] || 0) + 1;
-    }
+    if(p.id) statsSurvPerks[p.id] = (statsSurvPerks[p.id] || 0) + 1;
   });
+  recordSurvSpin(finalPerks);
   save();
 
   setSpinning(true);

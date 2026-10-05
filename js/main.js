@@ -2,6 +2,7 @@
 // INIT
 // ══════════════════════════════════════════════════════════════════════════════
 load();
+if(_statsMigrated) save();   // guarda las estadísticas migradas a ids (la clave antigua queda de respaldo)
 setLang(lang);
 renderSurvivors();
 renderKillers();

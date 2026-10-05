@@ -64,9 +64,10 @@ function spinKiller(){
     
     statsKillMods[chosenIdx] = (statsKillMods[chosenIdx] || 0) + 1;
   } else {
-    _killFinalModIdx = 0; 
-    _killFinalMod = "mod_4p"; 
+    _killFinalModIdx = 0;
+    _killFinalMod = "mod_4p";
   }
+  _curKillEntry = recordKillSpin(finalIdx, _killFinalModIdx);
   save();
 
   setSpinning(true);
@@ -223,10 +224,11 @@ function markWin(){
     blockedMods[lastKillerResult] = shortMod;
   }
   
+  setKillOutcome('win');
   save(); renderKillers();
-  
+
   const k=KILLERS[lastKillerResult];
-  _lastWinLossKiller = lastKillerResult; 
+  _lastWinLossKiller = lastKillerResult;
   document.getElementById('killer-result').innerHTML=`
     <div style="font-family:'Oswald',sans-serif;text-align:center">
       <div id="win-loss-kname" class="result-title" style="color:var(--green2)">${kName(k)}</div>
@@ -238,8 +240,9 @@ function markWin(){
 }
 function markLoss(){
   if(lastKillerResult===null) return;
+  setKillOutcome('loss');
   const k=KILLERS[lastKillerResult];
-  _lastWinLossKiller = lastKillerResult; 
+  _lastWinLossKiller = lastKillerResult;
   const wc=document.getElementById('kcard-'+lastKillerResult);
   if(wc) wc.classList.remove('winner');
   document.getElementById('killer-result').innerHTML=`

@@ -10,14 +10,14 @@ function buildFullPerkCatalog(){
     s.perks.en.forEach((pEn, pi) => {
       if(!seen.has(pEn)){
         seen.add(pEn);
-        catalog.push({ nameEs: s.perks.es[pi], nameEn: pEn, charEs: s.name.es||s.name.en, charEn: s.name.en });
+        catalog.push({ id: perkId(pEn), nameEs: s.perks.es[pi], nameEn: pEn, charEs: s.name.es||s.name.en, charEn: s.name.en });
       }
     });
   });
   GENERAL_PERKS.forEach(gp => {
     if(!seen.has(gp.en)){
       seen.add(gp.en);
-      catalog.push({ nameEs: gp.es, nameEn: gp.en, charEs: I18N.es.general_perks, charEn: I18N.en.general_perks });
+      catalog.push({ id: perkId(gp.en), nameEs: gp.es, nameEn: gp.en, charEs: I18N.es.general_perks, charEn: I18N.en.general_perks });
     }
   });
   return catalog;
@@ -38,7 +38,7 @@ function renderStatsTable(){
   const maxCount = Math.max(1, ...Object.values(statsSurvPerks));
   const totalSpins = Object.values(statsSurvPerks).reduce((a,b)=>a+b, 0);
   const totalPerks = catalog.length;
-  const seenPerks = catalog.filter(p => (statsSurvPerks[p.nameEs] || 0) > 0).length;
+  const seenPerks = catalog.filter(p => (statsSurvPerks[p.id] || 0) > 0).length;
   const zeroPerks = totalPerks - seenPerks;
 
   const summaryEl = document.getElementById('stats-summary-row');
@@ -54,8 +54,8 @@ function renderStatsTable(){
   });
 
   filtered.sort((a, b) => {
-    const cA = statsSurvPerks[a.nameEs] || 0;
-    const cB = statsSurvPerks[b.nameEs] || 0;
+    const cA = statsSurvPerks[a.id] || 0;
+    const cB = statsSurvPerks[b.id] || 0;
     if(_statsSortMode === 'count')  return cB - cA || a.nameEs.localeCompare(b.nameEs);
     if(_statsSortMode === 'zero')   return cA - cB || a.nameEs.localeCompare(b.nameEs);
     if(_statsSortMode === 'alpha')  return (lang==='es'?a.nameEs:a.nameEn).localeCompare(lang==='es'?b.nameEs:b.nameEn);
@@ -79,7 +79,7 @@ function renderStatsTable(){
   }
 
   tbody.innerHTML = filtered.map(p => {
-    const count = statsSurvPerks[p.nameEs] || 0;
+    const count = statsSurvPerks[p.id] || 0;
     const pct = maxCount > 0 ? (count / maxCount * 100).toFixed(0) : 0;
     const name = lang === 'es' ? p.nameEs : p.nameEn;
     const char = lang === 'es' ? p.charEs : p.charEn;

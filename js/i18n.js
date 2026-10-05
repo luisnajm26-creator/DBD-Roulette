@@ -18,7 +18,8 @@ function setLang(l){
 
   renderSurvivors();
   renderKillers();
-  
+  if(typeof renderHistory === 'function') renderHistory();
+
   if (typeof _survFinalPerks !== 'undefined' && _survFinalPerks.length === 4) {
      _survFinalPerks.forEach((p, i) => {
         const nameEl = document.querySelector(`.pname[data-perk-idx="${i}"]`);

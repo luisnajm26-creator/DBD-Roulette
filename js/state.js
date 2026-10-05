@@ -20,6 +20,16 @@ let statsKillMods     = {0:0, 1:0, 2:0, 3:0, 4:0};
 let useGeneralPerks   = true;
 let useKillerMods     = true;
 
+// Historial de tiradas (más reciente primero, máx. 40). Guarda ids, no textos, para que se traduzca al cambiar de idioma.
+let spinHistory   = [];
+let _curKillEntry = null;
+let _statsMigrated = false;
+
+// Id estable de una perk: nombre en inglés sin símbolos (es también el nombre de su imagen en img/perks)
+function perkId(en){ return en.toLowerCase().replace(/[^a-z0-9]/g,''); }
+// Id estable de un asesino: nombre de su imagen sin extensión
+function killerKey(k){ return k.img.split('/').pop().replace(/\.\w+$/,''); }
+
 // Preferencias de la interfaz. Si el sistema pide menos movimiento, las animaciones arrancan en modo rápido.
 let soundOn   = true;
 let speedFast = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);

@@ -54,7 +54,10 @@ const I18N = {
     speed_normal_title: "Animación normal: clic para acelerar", speed_fast_title: "Animación rápida: clic para volver a normal",
     search_char: "Buscar personaje o perk…", search_kill: "Buscar asesino…", no_results: "Sin resultados",
     stats_search: "Buscar perk…", stats_sort: "Ordenar:", sort_count: "Más usadas", sort_zero: "Sin uso primero", th_perk: "PERK",
-    stats_total: "Total apariciones", stats_seen: "Perks vistas", stats_unseen: "Sin aparecer"
+    stats_total: "Total apariciones", stats_seen: "Perks vistas", stats_unseen: "Sin aparecer",
+    history: "Historial", history_empty: "Aún no hay tiradas.", history_clear: "Borrar historial",
+    confirm_history: "¿Borrar el historial de este panel?",
+    copy_build: "Copiar build", copied: "¡Copiado!", copy_failed: "No se pudo copiar"
   },
   en: {
     title:"DBD ROULETTE",
@@ -108,6 +111,9 @@ const I18N = {
     speed_normal_title: "Normal animation: click to speed up", speed_fast_title: "Fast animation: click to switch back to normal",
     search_char: "Search character or perk…", search_kill: "Search killer…", no_results: "No results",
     stats_search: "Search perk…", stats_sort: "Sort:", sort_count: "Most used", sort_zero: "Unused first", th_perk: "PERK",
-    stats_total: "Total appearances", stats_seen: "Perks seen", stats_unseen: "Never appeared"
+    stats_total: "Total appearances", stats_seen: "Perks seen", stats_unseen: "Never appeared",
+    history: "History", history_empty: "No spins yet.", history_clear: "Clear history",
+    confirm_history: "Clear the history of this panel?",
+    copy_build: "Copy build", copied: "Copied!", copy_failed: "Couldn't copy"
   }
 };

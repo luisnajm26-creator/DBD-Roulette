@@ -81,6 +81,11 @@
       <div class="actions-row">
         <button id="btn-toggle-gen" class="small-btn tog purple" onclick="toggleGeneralPerks()">Perks Generales: ON</button>
       </div>
+      <details class="history">
+        <summary><span data-i="history">Historial</span> <span class="hist-count" id="surv-history-count"></span></summary>
+        <ol class="hist-list" id="surv-history-list"></ol>
+        <button class="small-btn danger" onclick="clearHistory('surv')" data-i="history_clear">Borrar historial</button>
+      </details>
     </div>
   </section>
 
@@ -118,6 +123,11 @@
         <button id="btn-toggle-mod" class="small-btn tog" onclick="toggleKillerMods()">Evento Modalidad: ON</button>
         <button class="small-btn danger" onclick="resetAceches()" data-i="reset_aceches">↺ REINICIAR ACECHES</button>
       </div>
+      <details class="history">
+        <summary><span data-i="history">Historial</span> <span class="hist-count" id="kill-history-count"></span></summary>
+        <ol class="hist-list" id="kill-history-list"></ol>
+        <button class="small-btn danger" onclick="clearHistory('kill')" data-i="history_clear">Borrar historial</button>
+      </details>
     </div>
   </section>
 
@@ -179,6 +189,7 @@
 <script defer src="js/survivor.js"></script>
 <script defer src="js/killer.js"></script>
 <script defer src="js/stats.js"></script>
+<script defer src="js/history.js"></script>
 <script defer src="js/main.js"></script>
 </body>
 </html>
