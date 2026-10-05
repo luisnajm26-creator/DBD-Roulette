@@ -15,6 +15,7 @@ function switchTab(tab){
   const btn=document.getElementById('tab-'+(tab==='survivor'?'surv':'killer'));
   btn.classList.add('active'); btn.setAttribute('aria-selected','true');
   document.getElementById('panel-'+tab).classList.add('active');
+  scheduleFit();
 }
 
 function setSpinning(val){
@@ -63,10 +64,53 @@ function applyFilter(which){
     if(ok) visible++;
   });
   document.getElementById(f.none).hidden = visible>0;
+  scheduleFit();
 }
 
 function visibleIdx(which){
   return FILTERS[which].list().map((_,i)=>i).filter(i=>matchesFilter(which,i));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AJUSTE AL ALTO DE LA VENTANA
+// Elige cuántas columnas usar para que TODA la cuadrícula quepa sin hacer scroll,
+// con las fotos lo más grandes posible (entre minW y maxW px de ancho). Si ni
+// con el tamaño mínimo cabe (p. ej. en un teléfono), usa el mínimo y hace scroll.
+// ══════════════════════════════════════════════════════════════════════════════
+const FIT = { gap:6, ratio:4/3, minW:50, maxW:120, bottomPad:12 };
+
+function fitGrid(){
+  const panel=document.querySelector('.panel.active'); if(!panel) return;
+  const g=panel.querySelector('.char-grid, .killer-card-grid'); if(!g) return;
+  const n=[...g.children].filter(c=>c.classList.contains('kcard') && !c.classList.contains('hide')).length;
+  const W=g.clientWidth;
+  if(!n || !W) return;
+
+  const label=g.querySelector('.kcard-label');
+  const extra=(label ? label.offsetHeight : 22) + 2;             // etiqueta + bordes de la tarjeta
+  const bar=panel.querySelector('.spin-bar');
+  const barH=(bar && getComputedStyle(bar).position==='sticky') ? bar.offsetHeight : 0;
+  const top=g.getBoundingClientRect().top + window.scrollY;
+  const H=window.innerHeight - top - barH - FIT.bottomPad;
+
+  let cols=null, smallest=null;
+  for(let c=1; c<=n; c++){
+    const w=(W-(c-1)*FIT.gap)/c;
+    if(w>FIT.maxW) continue;
+    if(w<FIT.minW) break;
+    smallest=c;
+    const rows=Math.ceil(n/c);
+    if(rows*(w*FIT.ratio+extra)+(rows-1)*FIT.gap <= H){ cols=c; break; }
+  }
+  if(cols===null) cols=smallest || Math.max(1, Math.floor((W+FIT.gap)/(FIT.minW+FIT.gap)));
+  g.style.setProperty('--cols', cols);
+}
+
+let _fitQueued=false;
+function scheduleFit(){
+  if(_fitQueued) return;
+  _fitQueued=true;
+  requestAnimationFrame(()=>{ _fitQueued=false; fitGrid(); });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
